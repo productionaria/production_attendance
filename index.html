@@ -1,0 +1,363 @@
+/**
+ * ============================================================
+ * CODINGLAB HRIS ATTENDANCE - BACKEND (Code.gs)
+ * ============================================================
+ * Menghubungkan dashboard HTML dengan 2 sheet:
+ * - "Data_Rekap"     : NO, NRP, NAMA, POSISI, DEPT, SHIFT, TANGGAL, REMARKS, KETERANGAN
+ * - "Data Karyawan"  : NRP, Nama Lengkap, Posisi, Departemen, Email, HP, FotoURL
+ *
+ * Nilai REMARKS yang valid: "SKD", "Izin / PKB", "Mangkir", "Cuti Tahunan"
+ * Format TANGGAL yang dikembalikan ke client: "dd/MM/yyyy"
+ * ============================================================
+ */
+
+const SHEET_REKAP = 'Data_Rekap';
+const SHEET_KARYAWAN = 'Data Karyawan';
+
+/**
+ * Entry point web app. Sesuaikan nama file HTML kalau berbeda dari "Index".
+ */
+function doGet(e) {
+  return HtmlService.createHtmlOutputFromFile('Index')
+    .setTitle('Production Attendance')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+function getSpreadsheet_() {
+  return SpreadsheetApp.getActiveSpreadsheet();
+}
+
+function getSheetOrThrow_(name) {
+  const sheet = getSpreadsheet_().getSheetByName(name);
+  if (!sheet) {
+    throw new Error('Sheet "' + name + '" tidak ditemukan. Pastikan nama sheet persis sama.');
+  }
+  return sheet;
+}
+
+/**
+ * Format nilai tanggal dari sel (bisa berupa Date object atau string) menjadi "dd/MM/yyyy".
+ */
+function formatTanggal_(value) {
+  if (value instanceof Date) {
+    return Utilities.formatDate(value, Session.getScriptTimeZone(), 'dd/MM/yyyy');
+  }
+  return String(value || '').trim();
+}
+
+/**
+ * Ubah string "dd/MM/yyyy" (atau "dd-MM-yyyy") menjadi Date object untuk ditulis ke sheet
+ * sebagai tanggal asli (bukan teks), supaya tetap bisa difilter/di-sort normal di Sheets.
+ */
+function parseTanggalToDate_(str) {
+  const parts = String(str).split(/[\/\-]/);
+  if (parts.length !== 3) return str; // fallback: biarkan apa adanya kalau format tak dikenali
+  const day = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10);
+  const year = parseInt(parts[2], 10);
+  return new Date(year, month - 1, day);
+}
+
+// ============================================================
+// DATA KARYAWAN
+// ============================================================
+
+/**
+ * Ambil seluruh data karyawan dari sheet "Data Karyawan".
+ * Return: Array of { nrp, nama, posisi, dept, email, hp, fotoUrl }
+ */
+function getKaryawanList() {
+  const sheet = getSheetOrThrow_(SHEET_KARYAWAN);
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return [];
+
+  const data = sheet.getRange(2, 1, lastRow - 1, 7).getValues();
+  const result = [];
+
+  data.forEach(function (r) {
+    const nrp = String(r[0] || '').trim();
+    if (!nrp) return; // lewati baris kosong
+    result.push({
+      nrp: nrp,
+      nama: String(r[1] || '').trim(),
+      posisi: String(r[2] || '').trim(),
+      dept: String(r[3] || '').trim(),
+      email: String(r[4] || '').trim(),
+      hp: String(r[5] || '').trim(),
+      fotoUrl: String(r[6] || '').trim()
+    });
+  });
+
+  return result;
+}
+
+/**
+ * Cari 1 karyawan berdasarkan NRP.
+ */
+function getKaryawanByNrp(nrp) {
+  const list = getKaryawanList();
+  const target = String(nrp).trim();
+  const found = list.filter(function (k) { return k.nrp === target; });
+  return found.length ? found[0] : null;
+}
+
+/**
+ * Cari nomor baris ASLI di sheet "Data Karyawan" (1-indexed, termasuk header)
+ * untuk sebuah NRP. Dipakai internal oleh updateKaryawan() dan deleteKaryawan()
+ * supaya bisa langsung menulis/menghapus baris yang tepat tanpa scan ulang tiap kali.
+ * Return: nomor baris, atau -1 kalau NRP tidak ditemukan.
+ */
+function findKaryawanRowByNrp_(nrp) {
+  const sheet = getSheetOrThrow_(SHEET_KARYAWAN);
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return -1;
+
+  const target = String(nrp).trim();
+  const nrpColumn = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+
+  for (let i = 0; i < nrpColumn.length; i++) {
+    if (String(nrpColumn[i][0] || '').trim() === target) {
+      return i + 2; // +2: baris data pertama = row 2 (header di row 1)
+    }
+  }
+  return -1;
+}
+
+/**
+ * Tambah 1 karyawan baru ke sheet "Data Karyawan".
+ * data: { nrp, nama, dept, posisi, email, hp, fotoUrl }
+ * NRP wajib diisi dan harus unik (belum terdaftar). Baris baru ditulis tepat setelah
+ * baris data terakhir (ditentukan dari kolom NRP via getLastDataRow_, bukan
+ * getLastRow() bawaan Sheets), supaya Tambah Karyawan manual maupun Import Excel
+ * beruntun selalu melanjutkan berurutan — sama seperti perbaikan pada addRekap().
+ */
+function addKaryawan(data) {
+  if (!data || !data.nrp) {
+    throw new Error('NRP wajib diisi untuk menambah karyawan baru.');
+  }
+
+  const nrp = String(data.nrp).trim();
+  if (getKaryawanByNrp(nrp)) {
+    throw new Error('NRP "' + nrp + '" sudah terdaftar di Data Karyawan.');
+  }
+
+  const sheet = getSheetOrThrow_(SHEET_KARYAWAN);
+  const lastDataRow = getLastDataRow_(sheet, 1); // kolom A = NRP di sheet Data Karyawan
+  const targetRow = lastDataRow + 1;
+
+  sheet.getRange(targetRow, 1, 1, 7).setValues([[
+    nrp,
+    data.nama || '',
+    data.posisi || '',
+    data.dept || '',
+    data.email || '',
+    data.hp || '',
+    data.fotoUrl || ''
+  ]]);
+
+  SpreadsheetApp.flush();
+
+  return { success: true, nrp: nrp, nama: data.nama };
+}
+
+/**
+ * Perbarui data 1 karyawan di sheet "Data Karyawan" berdasarkan NRP.
+ * data: { nrp, nama, dept, posisi, email, hp, fotoUrl }
+ * NRP dipakai sebagai kunci pencarian baris dan TIDAK diubah oleh fungsi ini.
+ */
+function updateKaryawan(data) {
+  if (!data || !data.nrp) {
+    throw new Error('NRP wajib diisi untuk memperbarui data karyawan.');
+  }
+
+  const rowNumber = findKaryawanRowByNrp_(data.nrp);
+  if (rowNumber === -1) {
+    throw new Error('NRP "' + data.nrp + '" tidak ditemukan di sheet Data Karyawan.');
+  }
+
+  const sheet = getSheetOrThrow_(SHEET_KARYAWAN);
+  // Kolom B-G: Nama Lengkap, Posisi, Departemen, Email, HP, FotoURL
+  sheet.getRange(rowNumber, 2, 1, 6).setValues([[
+    data.nama || '',
+    data.posisi || '',
+    data.dept || '',
+    data.email || '',
+    data.hp || '',
+    data.fotoUrl || ''
+  ]]);
+
+  return { success: true, nrp: data.nrp, nama: data.nama };
+}
+
+/**
+ * Hapus 1 karyawan dari sheet "Data Karyawan" berdasarkan NRP (mis. karena resign).
+ * Riwayat absensi karyawan tsb di "Data_Rekap" SENGAJA TIDAK ikut dihapus, supaya
+ * histori kehadiran historis tetap tersimpan untuk keperluan laporan/audit.
+ */
+function deleteKaryawan(nrp) {
+  if (!nrp) {
+    throw new Error('NRP wajib diisi untuk menghapus data karyawan.');
+  }
+
+  const rowNumber = findKaryawanRowByNrp_(nrp);
+  if (rowNumber === -1) {
+    throw new Error('NRP "' + nrp + '" tidak ditemukan di sheet Data Karyawan.');
+  }
+
+  const sheet = getSheetOrThrow_(SHEET_KARYAWAN);
+  sheet.deleteRow(rowNumber);
+  return { success: true };
+}
+
+// ============================================================
+// DATA REKAP (ABSENSI)
+// ============================================================
+
+/**
+ * Ambil seluruh data rekap kehadiran dari sheet "Data_Rekap".
+ * Setiap baris disertai `rowNumber` (nomor baris ASLI di sheet, 1-indexed)
+ * supaya bisa dipakai untuk update/hapus baris yang tepat nantinya.
+ * Return: Array of { rowNumber, no, nrp, nama, posisi, dept, shift, tanggal, remarks, keterangan }
+ */
+function getRekapAll() {
+  const sheet = getSheetOrThrow_(SHEET_REKAP);
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return [];
+
+  const data = sheet.getRange(2, 1, lastRow - 1, 9).getValues();
+  const result = [];
+
+  data.forEach(function (r, idx) {
+    const nrp = String(r[1] || '').trim();
+    if (!nrp) return; // lewati baris kosong
+
+    result.push({
+      rowNumber: idx + 2, // baris ke-berapa di sheet (header ada di baris 1)
+      no: r[0],
+      nrp: nrp,
+      nama: String(r[2] || '').trim(),
+      posisi: String(r[3] || '').trim(),
+      dept: String(r[4] || '').trim(),
+      shift: String(r[5] || '').trim(),
+      tanggal: formatTanggal_(r[6]),
+      remarks: String(r[7] || '').trim(),
+      keterangan: String(r[8] || '').trim()
+    });
+  });
+
+  return result;
+}
+
+/**
+ * Cari nomor baris ASLI di sheet TERAKHIR yang benar-benar berisi data pada kolom
+ * kunci tertentu (mis. kolom NRP), mulai dari baris 2 (baris 1 = header).
+ *
+ * Ini SENGAJA tidak memakai sheet.getLastRow() bawaan Google Sheets, karena
+ * getLastRow() gampang meleset akibat sisa format/karakter tersembunyi di baris
+ * atau kolom lain (mis. bekas hapus baris, cell yang pernah diberi warna tapi
+ * kontennya sudah kosong) — akibatnya baris data baru bisa "lompat" jauh ke bawah
+ * alih-alih melanjutkan tepat setelah baris data terakhir yang sebenarnya.
+ *
+ * Return: nomor baris data terakhir (>= 2), atau 1 kalau belum ada data sama sekali.
+ */
+function getLastDataRow_(sheet, keyColumnIndex) {
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return 1; // sheet kosong / cuma ada header
+
+  const values = sheet.getRange(2, keyColumnIndex, lastRow - 1, 1).getValues();
+  let lastDataRow = 1; // sentinel: belum ada data ditemukan di kolom kunci
+
+  for (let i = 0; i < values.length; i++) {
+    if (String(values[i][0] || '').trim() !== '') {
+      lastDataRow = i + 2; // +2: offset ke nomor baris asli di sheet
+    }
+  }
+
+  return lastDataRow;
+}
+
+/**
+ * Tambah 1 baris absensi baru ke "Data_Rekap".
+ * entry: { nrp, shift, tanggal ("dd/MM/yyyy"), remarks, keterangan }
+ * Nama, Posisi, Departemen otomatis diambil dari "Data Karyawan" berdasarkan NRP.
+ *
+ * Baris ditulis TEPAT setelah baris data terakhir (ditentukan dari kolom NRP, bukan
+ * getLastRow() bawaan Sheets) supaya input manual maupun Import Excel beruntun
+ * selalu melanjutkan berurutan, tidak lompat ke baris lain.
+ */
+function addRekap(entry) {
+  const karyawan = getKaryawanByNrp(entry.nrp);
+  if (!karyawan) {
+    throw new Error('NRP "' + entry.nrp + '" tidak ditemukan di sheet Data Karyawan.');
+  }
+
+  const sheet = getSheetOrThrow_(SHEET_REKAP);
+  const lastDataRow = getLastDataRow_(sheet, 2); // kolom B = NRP
+  const targetRow = lastDataRow + 1;             // baris kosong tepat setelah data terakhir
+  const nextNo = lastDataRow;                    // baris data pertama (lastDataRow=1) -> NO=1, dst berurutan
+
+  sheet.getRange(targetRow, 1, 1, 9).setValues([[
+    nextNo,
+    karyawan.nrp,
+    karyawan.nama,
+    karyawan.posisi,
+    karyawan.dept,
+    entry.shift || '',
+    parseTanggalToDate_(entry.tanggal),
+    entry.remarks,
+    entry.keterangan || ''
+  ]]);
+
+  // Jaring pengaman: pastikan kolom NO tetap berurutan 1,2,3,... meski sheet
+  // sempat berada di kondisi tidak rapi (mis. bekas edit manual di masa lalu).
+  renumberRekapNo_(sheet);
+
+  // Pastikan perubahan langsung ter-commit sebelum panggilan addRekap berikutnya.
+  // Ini penting terutama saat Import Excel memanggil addRekap berkali-kali secara
+  // berurutan dari client — tanpa flush(), status "baris terakhir" bisa belum
+  // ter-update saat panggilan berikutnya masuk, sehingga barisnya jadi lompat/tabrakan.
+  SpreadsheetApp.flush();
+
+  return { success: true, nama: karyawan.nama, rowNumber: targetRow };
+}
+
+/**
+ * Tulis ulang kolom NO (kolom A) di "Data_Rekap" secara berurutan (1, 2, 3, ...)
+ * mengikuti posisi baris data yang sebenarnya saat ini (dideteksi dari kolom NRP,
+ * bukan nilai NO lama). Dipanggil setelah addRekap()/deleteRekap() supaya kolom NO
+ * selalu rapi berurutan, tidak ada lompatan angka akibat baris yang dihapus di tengah.
+ */
+function renumberRekapNo_(sheet) {
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return; // tidak ada data tersisa
+
+  const nrpValues = sheet.getRange(2, 2, lastRow - 1, 1).getValues(); // kolom B = NRP
+  const noValues = [];
+  let counter = 0;
+
+  for (let i = 0; i < nrpValues.length; i++) {
+    const nrp = String(nrpValues[i][0] || '').trim();
+    if (nrp) {
+      counter++;
+      noValues.push([counter]);
+    } else {
+      noValues.push(['']); // baris kosong (kalau ada) dibiarkan kosong, tidak ikut dinomori
+    }
+  }
+
+  sheet.getRange(2, 1, noValues.length, 1).setValues(noValues);
+}
+
+/**
+ * Hapus 1 baris absensi berdasarkan nomor baris asli di sheet (rowNumber dari getRekapAll()).
+ * Kolom NO otomatis dirapikan ulang (renumber) setelah baris dihapus, supaya
+ * urutannya tetap 1, 2, 3, ... tanpa lompatan.
+ */
+function deleteRekap(rowNumber) {
+  const sheet = getSheetOrThrow_(SHEET_REKAP);
+  sheet.deleteRow(rowNumber);
+  renumberRekapNo_(sheet);
+  SpreadsheetApp.flush();
+  return { success: true };
+}
