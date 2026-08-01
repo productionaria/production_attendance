@@ -1,4 +1,4 @@
-Production Attendance — Codinglab HRIS
+Production Attendance 
 Dashboard kehadiran karyawan berbasis Google Apps Script + Google Sheets sebagai backend, dengan frontend yang bisa diakses lewat GitHub Pages maupun langsung sebagai Web App Apps Script.
 🔗 Live: https://productionaria.github.io/production_attendance/
 ---
