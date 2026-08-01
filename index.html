@@ -2896,8 +2896,14 @@
       if (value === null || value === undefined || value === '') return null;
 
       // Kasus 1: SheetJS sudah mengembalikan objek Date (biasanya jika cell diformat tanggal)
+      // PERBAIKAN: SheetJS (dengan opsi cellDates:true) membuat Date object berbasis UTC.
+      // Kalau langsung dipakai, downstream (formatTanggalDDMMYYYY) yang membaca komponen
+      // tanggal LOKAL bisa mendapat hasil geser 1 hari, tergantung timezone browser yang
+      // membuka halaman ini. Di sini kita ambil komponen tanggal versi UTC-nya lalu
+      // bangun ulang sebagai Date lokal dengan tanggal kalender yang SAMA persis,
+      // supaya tidak ada pergeseran sama sekali.
       if (value instanceof Date && !isNaN(value.getTime())) {
-        return value;
+        return new Date(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate());
       }
 
       // Kasus 2: serial number Excel (angka hari sejak 1899-12-30)
