@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Production Attendance</title>
+  <title>Dashboard Kehadiran - Codinglab HRIS</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome -->
@@ -19,8 +19,139 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body class="bg-slate-100 font-sans antialiased text-slate-800">
+  <!-- LOGIN SCREEN -->
+  <div id="login-screen" class="fixed inset-0 bg-slate-50 z-[100] flex overflow-y-auto">
+    <!-- KIRI: Branding & Preview (disembunyikan di layar kecil) -->
+    <div class="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/40 to-slate-100 p-12 flex-col justify-center">
+    <!-- Dekorasi lingkaran samar -->
+    <div class="absolute top-24 right-24 w-3 h-3 rounded-full bg-blue-200"></div>
+    <div class="absolute bottom-32 left-0 w-72 h-72 rounded-full bg-blue-100/50 -translate-x-1/3"></div>
+    <div class="absolute top-1/3 right-0 w-56 h-56 rounded-full bg-indigo-100/40"></div>
+      <div class="relative z-10 max-w-lg">
+        <div class="flex items-center gap-3 mb-10">
+          <div class="w-12 h-12 rounded-xl bg-red-600 text-white flex items-center justify-center font-bold text-2xl shadow-md shadow-red-200">P</div>
+          <div>
+            <h1 class="font-extrabold text-slate-900 text-lg leading-tight">Production</h1>
+            <p class="text-xs text-slate-400 font-medium">Dashboard System</p>
+          </div>
+        </div>
 
-  <div class="flex h-screen overflow-hidden">
+        <h2 class="text-4xl font-extrabold text-slate-900 leading-tight mb-4">
+          Selamat <span class="text-blue-600">Datang Kembali!</span>
+        </h2>
+        <p class="text-slate-500 text-base leading-relaxed mb-10 max-w-md">
+          Masuk untuk mengakses dashboard kehadiran dan pantau kinerja tim produksi Anda.
+        </p>
+        <!-- Preview kartu dashboard (dekoratif) -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xl p-5 max-w-md">
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-6 h-6 rounded-lg bg-red-600 text-white flex items-center justify-center font-bold text-[10px]">P</div>
+            <span class="text-[11px] font-bold text-slate-700">Production</span>
+          </div>
+          <div class="flex gap-3">
+            <div class="w-24 shrink-0 space-y-1.5">
+              <div class="px-2.5 py-1.5 rounded-lg bg-blue-50 text-blue-600 text-[10px] font-bold flex items-center gap-1.5"><i class="fa-solid fa-house text-[9px]"></i> Dashboard</div>
+              <div class="px-2.5 py-1.5 text-[10px] text-slate-400 flex items-center gap-1.5"><i class="fa-solid fa-pen-to-square text-[9px]"></i> Input Absensi</div>
+              <div class="px-2.5 py-1.5 text-[10px] text-slate-400 flex items-center gap-1.5"><i class="fa-solid fa-clock-rotate-left text-[9px]"></i> Riwayat</div>
+              <div class="px-2.5 py-1.5 text-[10px] text-slate-400 flex items-center gap-1.5"><i class="fa-solid fa-file-excel text-[9px]"></i> Laporan</div>
+            </div>
+            <div class="flex-1 space-y-2 min-w-0">
+              <p class="text-[11px] font-bold text-slate-800">Dashboard Kehadiran</p>
+              <div class="grid grid-cols-3 gap-1.5">
+                <div class="bg-slate-50 border border-slate-100 rounded-lg p-1.5">
+                  <p class="text-[8px] text-slate-400 font-bold">SAKIT</p>
+                  <p class="text-sm font-extrabold text-slate-800">2</p>
+                </div>
+                <div class="bg-slate-50 border border-slate-100 rounded-lg p-1.5">
+                  <p class="text-[8px] text-slate-400 font-bold">IZIN</p>
+                  <p class="text-sm font-extrabold text-slate-800">3</p>
+                </div>
+                <div class="bg-slate-50 border border-slate-100 rounded-lg p-1.5">
+                  <p class="text-[8px] text-slate-400 font-bold">CUTI</p>
+                  <p class="text-sm font-extrabold text-slate-800">0</p>
+                </div>
+              </div>
+              <div class="bg-slate-50 border border-slate-100 rounded-lg p-2 h-14 flex items-end gap-1">
+                <div class="w-2 bg-blue-500 rounded-t" style="height:60%"></div>
+                <div class="w-2 bg-emerald-500 rounded-t" style="height:30%"></div>
+                <div class="w-2 bg-rose-400 rounded-t" style="height:15%"></div>
+                <div class="w-2 bg-blue-500 rounded-t" style="height:90%"></div>
+                <div class="w-2 bg-emerald-500 rounded-t" style="height:40%"></div>
+                <div class="w-2 bg-rose-400 rounded-t" style="height:20%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- KANAN: Form Login -->
+    <div class="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12">
+      <div class="w-full max-w-md">
+        
+        <!-- Logo mobile (tampil hanya di layar kecil) -->
+        <div class="flex lg:hidden items-center gap-3 mb-8">
+          <div class="w-11 h-11 rounded-xl bg-red-600 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-red-200">P</div>
+          <div>
+            <h1 class="font-extrabold text-slate-900 leading-tight">Production</h1>
+            <p class="text-xs text-slate-400 font-medium">Dashboard System</p>
+          </div>
+        </div>
+        <h2 class="text-3xl font-extrabold text-slate-900 mb-2">Login</h2>
+        <p class="text-slate-500 text-sm mb-8">Masuk ke akun Anda untuk melanjutkan</p>
+
+        <form id="form-login" onsubmit="handleLogin(event)" class="space-y-5">
+          <div>
+            <label class="block text-sm font-bold text-slate-800 mb-2">Username</label>
+            <div class="relative">
+              <i class="fa-solid fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+              <input type="text" id="login-username" required autocomplete="username" placeholder="Masukkan username Anda"
+                class="w-full bg-white border border-slate-200 rounded-xl pl-11 pr-4 py-3 text-sm font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition">
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-slate-800 mb-2">Password</label>
+            <div class="relative">
+              <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+              <input type="password" id="login-password" required autocomplete="current-password" placeholder="Masukkan password Anda"
+                class="w-full bg-white border border-slate-200 rounded-xl pl-11 pr-11 py-3 text-sm font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition">
+              <button type="button" onclick="toggleLoginPasswordVisibility()" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition">
+                <i id="login-password-eye" class="fa-solid fa-eye text-sm"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-sm">
+            <label class="flex items-center gap-2 text-slate-600 font-medium cursor-pointer">
+              <input type="checkbox" id="login-remember" class="w-4 h-4 rounded accent-blue-600">
+              Ingat saya
+            </label>
+            <a href="javascript:void(0)" onclick="showToast ? showToast('Hubungi administrator untuk reset password.') : alert('Hubungi administrator untuk reset password.')" class="text-blue-600 font-semibold hover:underline">Lupa password?</a>
+          </div>
+
+          <div id="login-error" class="hidden text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-100 rounded-xl px-3 py-2.5"></div>
+
+          <button type="submit" id="login-submit-btn" class="w-full px-5 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-md shadow-blue-200 transition flex items-center justify-center     gap-2">
+            <i class="fa-solid fa-arrow-right-to-bracket text-xs"></i>
+            <span id="login-submit-label">Masuk</span>
+            <i id="login-submit-spinner" class="fa-solid fa-circle-notch fa-spin hidden"></i>
+          </button>
+        </form>
+
+        <div class="flex items-center gap-4 my-6">
+          <div class="flex-1 h-px bg-slate-200"></div>
+            <span class="text-xs text-slate-400 font-medium">atau</span>
+          <div class="flex-1 h-px bg-slate-200"></div>
+        </div>
+
+        <button type="button" disabled title="Login Google belum tersedia" class="w-full px-5 py-3 rounded-xl border border-slate-200 text-slate-400 text-sm font-bold flex items-center justify-center gap-3 cursor-not-allowed opacity-60">
+          <svg class="w-4 h-4" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l6-6C34.6 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21 21-9.4 21-21c0-1.4-.2-2.7-.4-4.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 15.9 18.9 13 24 13c3.1 0 5.8 1.1 8 3l6-6C34.6 5.1 29.6 3 24 3c-7.6 0-14.1 4.3-17.7 10.7z"/><path fill="#4CAF50" d="M24 45c5.5 0 10.5-2.1 14.3-5.6l-6.6-5.6C29.6 35.6 27 36.5 24 36.5c-5.3 0-9.7-3.4-11.3-8.1l-6.6 5.1C9.9 40.6 16.4 45 24 45z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.2-4.1 5.5l6.6 5.6C41.6 36 45 30.6 45 24c0-1.4-.2-2.7-.4-3.5z"/></svg>
+          Masuk dengan Google
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="app-root" class="flex h-screen overflow-hidden">
 
     <!-- SIDEBAR -->
     <aside class="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col justify-between z-20">
@@ -64,15 +195,31 @@
       </div>
 
       <!-- User Profile Footer Sidebar -->
-      <div class="p-4 border-t border-slate-100 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition">
+      <div id="sidebar-user-menu-toggle" onclick="toggleSidebarUserMenu()" class="p-4 border-t border-slate-100 flex items-center justify-between cursor-pointer hover:bg-slate-50 transition relative">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold">A</div>
+          <div id="sidebar-user-avatar" class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold">A</div>
           <div>
-            <p class="text-sm font-semibold text-slate-800">Produksi</p>
-            <p class="text-xs text-slate-400">Administrator</p>
+            <p id="sidebar-user-name" class="text-sm font-semibold text-slate-800">Produksi</p>
+            <p id="sidebar-user-role" class="text-xs text-slate-400">Administrator</p>
           </div>
         </div>
         <i class="fa-solid fa-chevron-down text-xs text-slate-400"></i>
+
+        <div id="sidebar-user-menu" class="hidden absolute bottom-full left-4 right-4 mb-2 bg-white border border-slate-200 rounded-xl shadow-lg p-2 space-y-0.5">
+          <button onclick="event.stopPropagation(); showToast('Fitur akan segera hadir.')" class="w-full text-left px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-lg flex items-center gap-2.5 transition">
+            <i class="fa-solid fa-user w-4 text-slate-400"></i> Profil Saya
+          </button>
+          <button onclick="event.stopPropagation(); showToast('Fitur akan segera hadir.')" class="w-full text-left px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-lg flex items-center gap-2.5 transition">
+            <i class="fa-solid fa-gear w-4 text-slate-400"></i> Pengaturan
+          </button>
+          <button onclick="event.stopPropagation(); showToast('Fitur akan segera hadir.')" class="w-full text-left px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 rounded-lg flex items-center gap-2.5 transition">
+            <i class="fa-solid fa-circle-info w-4 text-slate-400"></i> Bantuan & Support
+          </button>
+          <div class="h-px bg-slate-100 my-1"></div>
+            <button onclick="event.stopPropagation(); openLogoutConfirm()" class="w-full text-left px-3 py-2 text-sm text-rose-600 hover:bg-rose-50 rounded-lg flex items-center gap-2.5 transition">
+              <i class="fa-solid fa-arrow-right-from-bracket w-4"></i> Logout
+            </button>
+        </div>
       </div>
     </aside>
 
@@ -334,9 +481,9 @@
             <!-- Tren Kehadiran -->
             <div class="lg:col-span-8 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
               <div>
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
                   <div>
-                    <h3 id="trend-chart-title" class="font-bold text-slate-900">Tren Kehadiran - Juli 2026</h3>
+                    <h3 class="font-bold text-slate-900">Tren Kehadiran - (<span class="bulan-berjalan"></span>)</h3>
                   </div>
                   <div class="flex items-center gap-2">
                     <div class="bg-slate-100 p-1 rounded-xl flex items-center text-xs font-semibold">
@@ -350,6 +497,19 @@
                       <i class="fa-solid fa-download text-sm"></i>
                     </button>
                   </div>
+                </div>
+
+                <!-- Legend custom, bukan bawaan Chart.js, supaya tidak pernah nabrak datalabel -->
+                <div class="flex items-center gap-5 mb-4 text-xs font-semibold text-slate-600">
+                  <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#3b82f6]"></span>Sakit (SKD)</span>
+                  <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#10b981]"></span>Izin / PKB</span>
+                  <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#f43f5e]"></span>Mangkir</span>
+                  <span class="flex items-center gap-1.5">
+                    <span class="inline-block w-3 h-[2px] bg-[#0f172a] relative">
+                      <span class="absolute -right-0.5 -top-[3px] w-2 h-2 rounded-full bg-[#0f172a]"></span>
+                    </span>
+                    Attendance Ratio
+                  </span>
                 </div>
 
                 <div class="h-72 w-full">
@@ -367,7 +527,7 @@
             <div class="lg:col-span-6 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
               <div class="flex items-center justify-between mb-4">
                 <div>
-                  <h3 id="top-mangkir-title" class="font-bold text-slate-900">Top 5 Mangkir Terbanyak</h3>
+                  <h3 class="font-bold text-slate-900">Top 5 Mangkir Terbanyak (<span class="bulan-berjalan"></span>)</h3>
                 </div>
               </div>
 
@@ -392,7 +552,7 @@
             <div class="lg:col-span-6 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
               <div class="flex items-center justify-between mb-4">
                 <div>
-                  <h3 id="pengajuan-title" class="font-bold text-slate-900">Pengajuan Terbaru (Juli 2026)</h3>
+                  <h3 class="font-bold text-slate-900">Pengajuan Terbaru (<span class="bulan-berjalan"></span>)</h3>
                 </div>
               </div>
 
@@ -646,10 +806,10 @@
 
             <!-- Profil Karyawan -->
             <div class="lg:col-span-8 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-6">
-              <img id="riwayat-foto" src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22128%22%20height%3D%22128%22%20viewBox%3D%220%200%20128%20128%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23e2e8f0%22%20rx%3D%22128%22/%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2252%25%22%20dy%3D%22.35em%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2251%22%20font-weight%3D%22bold%22%20fill%3D%22%23475569%22%3EYA%3C/text%3E%3C/svg%3E" class="w-20 h-20 rounded-full object-cover border border-slate-100 shrink-0" alt="Foto Karyawan">
+              <img id="riwayat-foto" src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22128%22%20height%3D%22128%22%20viewBox%3D%220%200%20128%20128%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23e2e8f0%22%20rx%3D%22128%22/%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2252%25%22%20dy%3D%22.35em%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2251%22%20font-weight%3D%22bold%22%20fill%3D%22%23475569%22%3ENK%3C/text%3E%3C/svg%3E" class="w-20 h-20 rounded-full object-cover border border-slate-100 shrink-0" alt="Foto Karyawan">
               <div class="flex-1 w-full">
                 <div class="flex items-center gap-3 mb-3 flex-wrap">
-                  <h3 id="riwayat-nama" class="text-xl font-extrabold text-slate-900">Yoga Arie Nugraha</h3>
+                  <h3 id="riwayat-nama" class="text-xl font-extrabold text-slate-900">Nama Karyawan</h3>
                   <span id="riwayat-status-badge" class="px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-600 text-[10px] font-bold tracking-wide">AKTIF</span>
                 </div>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -657,7 +817,7 @@
                     <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center shrink-0"><i class="fa-solid fa-id-card text-xs"></i></div>
                     <div>
                       <p class="text-[10px] text-slate-400 font-bold uppercase">NRP</p>
-                      <p id="riwayat-nrp-label" class="text-sm font-bold text-slate-800">00012345</p>
+                      <p id="riwayat-nrp-label" class="text-sm font-bold text-slate-800">00000000</p>
                     </div>
                   </div>
                   <div class="flex items-center gap-2">
@@ -992,9 +1152,9 @@
           <!-- Kartu Profil Utama -->
           <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col xl:flex-row items-start xl:items-center gap-6">
             <div class="flex items-center gap-5 shrink-0">
-              <img id="profil-foto" src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22128%22%20height%3D%22128%22%20viewBox%3D%220%200%20128%20128%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23e2e8f0%22%20rx%3D%22128%22/%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2252%25%22%20dy%3D%22.35em%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2251%22%20font-weight%3D%22bold%22%20fill%3D%22%23475569%22%3EH%3C/text%3E%3C/svg%3E" class="w-20 h-20 rounded-full object-cover border border-slate-100" alt="Foto Karyawan">
+              <img id="profil-foto" src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22128%22%20height%3D%22128%22%20viewBox%3D%220%200%20128%20128%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23e2e8f0%22%20rx%3D%22128%22/%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2252%25%22%20dy%3D%22.35em%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2251%22%20font-weight%3D%22bold%22%20fill%3D%22%23475569%22%3ENK%3C/text%3E%3C/svg%3E" class="w-20 h-20 rounded-full object-cover border border-slate-100" alt="Foto Karyawan">
               <div>
-                <h3 id="profil-nama" class="text-xl font-extrabold text-slate-900 uppercase">Hairani</h3>
+                <h3 id="profil-nama" class="text-xl font-extrabold text-slate-900 uppercase">Nama Karyawan</h3>
                 <p id="profil-posisi" class="text-sm font-bold text-blue-600">Operator TP</p>
                 <p id="profil-dept-label" class="text-xs text-slate-500 mt-0.5">SPRO</p>
                 <span id="profil-status-badge" class="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-600 text-[11px] font-bold">
@@ -1008,28 +1168,28 @@
                 <div class="w-9 h-9 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center shrink-0"><i class="fa-solid fa-id-card text-xs"></i></div>
                 <div>
                   <p class="text-[11px] text-slate-400 font-semibold">NRP</p>
-                  <p id="profil-nrp-label" class="text-sm font-bold text-slate-800">33170029</p>
+                  <p id="profil-nrp-label" class="text-sm font-bold text-slate-800">00000000</p>
                 </div>
               </div>
               <div class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center shrink-0"><i class="fa-solid fa-calendar text-xs"></i></div>
                 <div>
                   <p class="text-[11px] text-slate-400 font-semibold">Tanggal Masuk</p>
-                  <p id="profil-tanggal-masuk" class="text-sm font-bold text-slate-800">12 Jan 2020</p>
+                  <p id="profil-tanggal-masuk" class="text-sm font-bold text-slate-800">-</p>
                 </div>
               </div>
               <div class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center shrink-0"><i class="fa-regular fa-clock text-xs"></i></div>
                 <div>
                   <p class="text-[11px] text-slate-400 font-semibold">Masa Kerja</p>
-                  <p id="profil-masa-kerja" class="text-sm font-bold text-slate-800">6 Tahun 4 Bulan</p>
+                  <p id="profil-masa-kerja" class="text-sm font-bold text-slate-800">-</p>
                 </div>
               </div>
               <div class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center shrink-0"><i class="fa-solid fa-user text-xs"></i></div>
                 <div>
                   <p class="text-[11px] text-slate-400 font-semibold">Group Leader</p>
-                  <p id="profil-group-leader" class="text-sm font-bold text-slate-800">Yoga Pratama</p>
+                  <p id="profil-group-leader" class="text-sm font-bold text-slate-800">-</p>
                 </div>
               </div>
               <div class="flex items-center gap-3">
@@ -1073,14 +1233,14 @@
                   <i class="fa-solid fa-envelope w-4 text-slate-400 mt-0.5"></i>
                   <div class="flex-1 flex items-center justify-between gap-2">
                     <span class="text-slate-500">Email</span>
-                    <span id="profil-info-email" class="font-bold text-slate-800 text-right">hairani@example.com</span>
+                    <span id="profil-info-email" class="font-bold text-slate-800 text-right">nama@example.com</span>
                   </div>
                 </div>
                 <div class="flex items-start gap-3">
                   <i class="fa-solid fa-phone w-4 text-slate-400 mt-0.5"></i>
                   <div class="flex-1 flex items-center justify-between gap-2">
                     <span class="text-slate-500">Nomor HP</span>
-                    <span id="profil-info-hp" class="font-bold text-slate-800 text-right">0812-3456-7890</span>
+                    <span id="profil-info-hp" class="font-bold text-slate-800 text-right">0812-0000-0000</span>
                   </div>
                 </div>
                 <div class="flex items-start gap-3">
@@ -1094,14 +1254,14 @@
                   <i class="fa-solid fa-cake-candles w-4 text-slate-400 mt-0.5"></i>
                   <div class="flex-1 flex items-center justify-between gap-2">
                     <span class="text-slate-500">Tanggal Lahir</span>
-                    <span id="profil-info-tgl-lahir" class="font-bold text-slate-800 text-right">15 Mei 1998</span>
+                    <span id="profil-info-tgl-lahir" class="font-bold text-slate-800 text-right">-</span>
                   </div>
                 </div>
                 <div class="flex items-start gap-3">
                   <i class="fa-solid fa-location-dot w-4 text-slate-400 mt-0.5"></i>
                   <div class="flex-1 flex items-center justify-between gap-2">
                     <span class="text-slate-500 shrink-0">Alamat</span>
-                    <span id="profil-info-alamat" class="font-bold text-slate-800 text-right">Jl. A. Yani No. 123, Banjarmasin</span>
+                    <span id="profil-info-alamat" class="font-bold text-slate-800 text-right">-</span>
                   </div>
                 </div>
               </div>
@@ -1306,9 +1466,9 @@
                 </div>
 
                 <div class="flex items-center gap-4 mb-5">
-                  <img id="dk-detail-foto" src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22128%22%20height%3D%22128%22%20viewBox%3D%220%200%20128%20128%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23e2e8f0%22%20rx%3D%22128%22/%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2252%25%22%20dy%3D%22.35em%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2251%22%20font-weight%3D%22bold%22%20fill%3D%22%23475569%22%3EM%3C/text%3E%3C/svg%3E" class="w-16 h-16 rounded-full object-cover border border-slate-100" alt="Foto Karyawan">
+                  <img id="dk-detail-foto" src="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22128%22%20height%3D%22128%22%20viewBox%3D%220%200%20128%20128%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23e2e8f0%22%20rx%3D%22128%22/%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2252%25%22%20dy%3D%22.35em%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%2C%20sans-serif%22%20font-size%3D%2251%22%20font-weight%3D%22bold%22%20fill%3D%22%23475569%22%3ENK%3C/text%3E%3C/svg%3E" class="w-16 h-16 rounded-full object-cover border border-slate-100" alt="Foto Karyawan">
                   <div>
-                    <h4 id="dk-detail-nama" class="text-base font-extrabold text-slate-900 uppercase">Miriyanto</h4>
+                    <h4 id="dk-detail-nama" class="text-base font-extrabold text-slate-900 uppercase">Nama Karyawan</h4>
                     <p id="dk-detail-posisi" class="text-sm font-bold text-blue-600">Operator TP</p>
                     <p id="dk-detail-dept" class="text-xs text-slate-500">SPRO</p>
                     <span id="dk-detail-status-badge" class="inline-flex items-center gap-1.5 mt-1.5 px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600 text-[10px] font-bold">
@@ -1323,7 +1483,7 @@
                     <i class="fa-solid fa-id-card w-4 text-slate-400"></i>
                     <div class="flex-1 flex items-center justify-between">
                       <span class="text-slate-500 text-xs">NRP</span>
-                      <span id="dk-detail-nrp" class="font-bold text-slate-800 text-xs">61950035</span>
+                      <span id="dk-detail-nrp" class="font-bold text-slate-800 text-xs">00000000</span>
                     </div>
                   </div>
                   <div class="flex items-center gap-3">
@@ -1344,21 +1504,21 @@
                     <i class="fa-solid fa-calendar w-4 text-slate-400"></i>
                     <div class="flex-1 flex items-center justify-between">
                       <span class="text-slate-500 text-xs">Tanggal Masuk</span>
-                      <span id="dk-detail-tanggal-masuk" class="font-bold text-slate-800 text-xs">12 Jan 2020</span>
+                      <span id="dk-detail-tanggal-masuk" class="font-bold text-slate-800 text-xs">-</span>
                     </div>
                   </div>
                   <div class="flex items-center gap-3">
                     <i class="fa-regular fa-clock w-4 text-slate-400"></i>
                     <div class="flex-1 flex items-center justify-between">
                       <span class="text-slate-500 text-xs">Masa Kerja</span>
-                      <span id="dk-detail-masa-kerja" class="font-bold text-slate-800 text-xs">4 Tahun 6 Bulan</span>
+                      <span id="dk-detail-masa-kerja" class="font-bold text-slate-800 text-xs">-</span>
                     </div>
                   </div>
                   <div class="flex items-center gap-3">
                     <i class="fa-solid fa-user w-4 text-slate-400"></i>
                     <div class="flex-1 flex items-center justify-between">
                       <span class="text-slate-500 text-xs">Group Leader</span>
-                      <span id="dk-detail-group-leader" class="font-bold text-slate-800 text-xs">Yoga Pratama</span>
+                      <span id="dk-detail-group-leader" class="font-bold text-slate-800 text-xs">-</span>
                     </div>
                   </div>
                   <div class="flex items-center gap-3">
@@ -1610,10 +1770,119 @@
           </div>
         </div>
 
-        <div id="view-manajemen-user" class="view-section hidden flex items-center justify-center h-64 border-2 border-dashed border-slate-200 rounded-2xl">
-          <div class="text-center">
-            <i class="fa-solid fa-user-gear text-4xl text-slate-300 mb-3"></i>
-            <h3 class="text-slate-500 font-semibold">Modul Manajemen User belum tersedia</h3>
+        <div id="view-manajemen-user" class="view-section space-y-6 hidden">
+          <!-- Stat Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+              <div>
+                <p class="text-xs font-bold text-slate-400 tracking-wider">TOTAL USER</p>
+                <h3 id="mu-total-user" class="text-3xl font-extrabold text-slate-900 mt-1">0</h3>
+                <p class="text-xs text-slate-400 mt-1">Semua pengguna terdaftar</p>
+              </div>
+              <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg"><i class="fa-solid fa-users"></i></div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+              <div>
+                <p class="text-xs font-bold text-slate-400 tracking-wider">ADMINISTRATOR</p>
+                <h3 id="mu-total-admin" class="text-3xl font-extrabold text-slate-900 mt-1">0</h3>
+                <p class="text-xs text-slate-400 mt-1">Memiliki akses penuh</p>
+              </div>
+              <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg"><i class="fa-solid fa-shield-halved"></i></div>
+            </div>
+          </div>
+
+          <!-- Konten Utama: Daftar & Form -->
+          <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+
+            <!-- Kolom Kiri: Daftar Pengguna -->
+            <div class="xl:col-span-8 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-bold text-slate-900 text-lg">Daftar Pengguna</h3>
+              </div>
+              <div class="flex items-center gap-3 mb-4">
+                <div class="relative flex-1">
+                  <i class="fa-solid fa-magnifying-glass absolute left-4 top-3 text-slate-400"></i>
+                  <input type="text" id="mu-search" oninput="filterUserTable()" placeholder="Cari nama atau username..." class="w-full bg-white border border-slate-200 rounded-full pl-10 pr-4 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition">
+                </div>
+                <button onclick="loadUserList()" class="w-10 h-10 rounded-xl border border-slate-200 text-slate-500 hover:bg-slate-50 flex items-center justify-center transition shrink-0" title="Refresh"><i class="fa-solid fa-rotate-right text-sm"></i></button>
+              </div>
+
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                  <thead>
+                    <tr class="text-slate-400 border-b border-slate-100 text-xs">
+                      <th class="pb-3 font-bold">No</th>
+                      <th class="pb-3 font-bold">Nama</th>
+                      <th class="pb-3 font-bold">Username</th>
+                      <th class="pb-3 font-bold">Status</th>
+                      <th class="pb-3 font-bold text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody id="mu-table-body" class="divide-y divide-slate-50 font-medium text-slate-700"></tbody>
+                </table>
+              </div>
+
+              <div class="flex flex-col md:flex-row items-center justify-between gap-4 mt-5">
+                <p id="mu-showing-label" class="text-xs text-slate-500">Menampilkan 0 - 0 dari 0 data</p>
+                <div class="flex items-center gap-2" id="mu-pagination"></div>
+              </div>
+            </div>
+
+            <!-- Kolom Kanan: Form Tambah/Edit User -->
+            <div class="xl:col-span-4">
+              <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm xl:sticky xl:top-24">
+                <h3 id="mu-panel-title" class="font-bold text-slate-900 text-lg mb-5">Tambah User Baru</h3>
+
+                <form id="form-user" onsubmit="submitUserForm(event)" class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-bold text-slate-800 mb-1.5">Nama Lengkap</label>
+                    <div class="relative">
+                      <i class="fa-solid fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                      <input type="text" id="mu-nama" required placeholder="Masukkan nama lengkap" class="w-full bg-white border border-slate-200 rounded-xl pl-11 pr-4 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition">
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-bold text-slate-800 mb-1.5">Username</label>
+                    <div class="relative">
+                      <i class="fa-solid fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                      <input type="text" id="mu-username" required placeholder="Masukkan username" class="w-full bg-white border border-slate-200 rounded-xl pl-11 pr-4 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition">
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-bold text-slate-800 mb-1.5">Status / Peran</label>
+                    <select id="mu-role" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-800 outline-none cursor-pointer">
+                      <option value="">Pilih status</option>
+                      <option value="User">User</option>
+                      <option value="Administrator">Administrator</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-bold text-slate-800 mb-1.5">Password</label>
+                    <div class="relative">
+                      <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                      <input type="password" id="mu-password" placeholder="Masukkan password" class="w-full bg-white border border-slate-200 rounded-xl pl-11 pr-11 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition">
+                      <button type="button" onclick="toggleMuPasswordVisibility('mu-password', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition"><i class="fa-solid fa-eye text-sm"></i></button>
+                    </div>
+                    <p id="mu-password-hint" class="text-xs text-slate-400 mt-1.5 hidden">Kosongkan jika tidak ingin mengubah password.</p>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-bold text-slate-800 mb-1.5">Konfirmasi Password</label>
+                    <div class="relative">
+                      <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                      <input type="password" id="mu-password-confirm" placeholder="Ulangi password" class="w-full bg-white border border-slate-200 rounded-xl pl-11 pr-11 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition">
+                      <button type="button" onclick="toggleMuPasswordVisibility('mu-password-confirm', this)" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition"><i class="fa-solid fa-eye text-sm"></i></button>
+                    </div>
+                  </div>
+                  <div id="mu-error" class="hidden text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-100 rounded-xl px-3 py-2.5"></div>
+                  <div class="flex items-center gap-3 pt-2">
+                    <button type="button" onclick="resetUserForm()" class="flex-1 px-5 py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-sm font-bold transition">Batal</button>
+                    <button type="submit" class="flex-1 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-md shadow-blue-200 transition flex items-center justify-center gap-2">
+                      <i class="fa-solid fa-floppy-disk"></i> <span id="mu-submit-label">Simpan User</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1625,6 +1894,25 @@
       <i class="fa-solid fa-circle-check text-emerald-400"></i>
       <p id="toast-message" class="text-sm font-medium">Data berhasil disimpan!</p>
     </div>
+
+    <!-- ============================================== -->
+    <!-- MODAL KONFIRMASI LOGOUT -->
+    <!-- ============================================== -->
+    <div id="logout-modal-backdrop" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+        <div class="p-6 text-center">
+          <div class="w-14 h-14 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center text-2xl mx-auto mb-4">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          </div>
+          <h3 class="font-bold text-slate-900 text-lg mb-1.5">Keluar dari Aplikasi?</h3>
+          <p class="text-sm text-slate-500">Apakah Anda yakin ingin keluar dari APS?</p>
+        </div>
+        <div class="flex items-center gap-3 px-6 pb-6">
+          <button onclick="closeLogoutConfirm()" class="flex-1 px-5 py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-sm font-bold transition">Batal</button>
+          <button onclick="confirmLogoutAction()" class="flex-1 px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-bold shadow-md shadow-rose-200 transition">Logout</button>
+        </div>
+      </div>
+    </div>    
 
     <!-- ============================================== -->
     <!-- MODAL IMPORT EXCEL (Input Absensi - Data Historis) -->
@@ -1924,6 +2212,11 @@
 
   <!-- SCRIPT UNTUK INTERAKSI DAN GRAFIK -->
   <script>
+    // URL ini disisipkan otomatis oleh Code.gs (lihat doGet) memakai print
+    // scriptlet Apps Script — tidak pernah ditulis manual, jadi aman di-commit
+    // ke repo publik. Nilainya berbeda otomatis untuk tiap deployment/environment.
+    const WEB_APP_URL = "<?= scriptUrl ?>"; 
+
     // Daftarkan plugin datalabels secara global (dimatikan per-chart bila tidak diperlukan)
     // Dibungkus try/catch: kalau Chart.js/plugin gagal dimuat dari CDN (mis. jaringan
     // memblokir CDN tertentu), aplikasi tetap berjalan normal tanpa fitur chart.
@@ -1958,32 +2251,63 @@
     let realRekapAll = [];
     let dataKaryawanByNrp = {}; // lookup cepat untuk form Input Absensi
 
-    // Ganti URL di bawah dengan URL Web App Google Apps Script Yoga yang berakhiran /exec
-    const WEB_APP_URL = ("https://script.google.com/macros/s/AKfycbwNdrWC7x7lwJ-D6WOTIFWFKqqdP9ofv9TSQBB7IFgpPPKFF_Sg7EqVzW_imnjCVr3J/exec");
+    // Deteksi apakah kita berjalan di dalam Apps Script (ada objek google.script.run)
+    // atau sedang dibuka langsung sebagai file HTML biasa (mode preview/offline).
+    const isAppsScriptEnv = (typeof google !== 'undefined' && google.script && google.script.run);
+
+    let sessionToken = null; // diisi setelah login sukses
+
+    // --- Auto-Logout Saat Idle ---
+    // Logout otomatis kalau tidak ada aktivitas mouse/keyboard sama sekali selama
+    // IDLE_TIMEOUT_MS, WALAUPUN sesi di server masih valid. Ini proteksi tambahan
+    // untuk kasus laptop/HP ditinggal dalam kondisi masih login.
+    const IDLE_TIMEOUT_MS = 20 * 60 * 1000; // 20 menit tanpa aktivitas
+    let idleTimer = null;
+
+    function resetIdleTimer() {
+      if (!sessionToken) return; // idle watcher cuma aktif kalau sedang login
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        forceLogout('Sesi berakhir otomatis karena tidak ada aktivitas selama 20 menit.');
+      }, IDLE_TIMEOUT_MS);
+    }
+
+    function startIdleWatcher() {
+      ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click'].forEach(evt => {
+      document.addEventListener(evt, resetIdleTimer, { passive: true });
+      });
+      resetIdleTimer();
+    }
+
+    function stopIdleWatcher() {
+      clearTimeout(idleTimer);
+      idleTimer = null;
+    }
 
     function gsRun(fnName, ...args) {
       return new Promise((resolve, reject) => {
-        // Jika berjalan di dalam Apps Script asli, gunakan bawaan aslinya
         if (typeof google !== 'undefined' && google.script && google.script.run) {
           google.script.run
             .withSuccessHandler(resolve)
             .withFailureHandler((err) => reject(err))
           [fnName](...args);
-        }
-        // Jika dibuka dari GitHub Pages (di luar Apps Script), gunakan fetch ke Web App API
-        else {
+        } else {
           fetch(WEB_APP_URL, {
             method: 'POST',
-            body: JSON.stringify({ functionName: fnName, arguments: args })
+            body: JSON.stringify({ functionName: fnName, arguments: args, token: sessionToken })
           })
           .then(response => {
-            if (!response.ok) {
-              throw new Error('Web App merespons dengan status ' + response.status + '. Cek pengaturan deployment (Execute as / Who has access).');
-            }
-            return response.json();
+          if (!response.ok) {
+            throw new Error('Web App merespons dengan status ' + response.status + '.');
+          }
+          return response.json();
           })
           .then(result => {
-            if (result && result.error) {
+            if (result && result.error === 'Unauthorized') {
+              // Sesi habis/invalid -> paksa kembali ke layar login
+              forceLogout('Sesi Anda telah berakhir. Silakan masuk kembali.');
+              reject(new Error('Unauthorized'));
+            } else if (result && result.error) {
               reject(new Error(result.error));
             } else {
               resolve(result);
@@ -1992,6 +2316,142 @@
           .catch(err => reject(err));
         }
       });
+    }
+
+    function toggleSidebarUserMenu() {
+      document.getElementById('sidebar-user-menu').classList.toggle('hidden');
+    }
+
+    function showLoginError(msg) {
+      const el = document.getElementById('login-error');
+      el.innerText = msg;
+      el.classList.remove('hidden');
+    }
+
+    function setLoginLoading(isLoading) {
+      document.getElementById('login-submit-btn').disabled = isLoading;
+      document.getElementById('login-submit-label').innerText = isLoading ? 'Memproses...' : 'Masuk';
+      document.getElementById('login-submit-spinner').classList.toggle('hidden', !isLoading);
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      document.getElementById('login-error').classList.add('hidden');
+      setLoginLoading(true);
+
+      const username = document.getElementById('login-username').value.trim();
+      const password = document.getElementById('login-password').value;
+
+      try {
+        // login TIDAK butuh sessionToken, karena inilah yang menghasilkan token
+        const res = await fetch(WEB_APP_URL, {
+          method: 'POST',
+          body: JSON.stringify({ functionName: 'login', arguments: [username, password] })
+        });
+        const result = await res.json();
+
+        if (!result || result.error || !result.token) {
+          showLoginError(result && result.error ? result.error : 'Username atau password salah.');
+          setLoginLoading(false);
+          return;
+        }
+
+        sessionToken = result.token;
+        localStorage.setItem('sessionToken', sessionToken);
+        localStorage.setItem('sessionUser', JSON.stringify({ nama: result.nama || username, role: result.role || 'User' }));
+
+        await enterApp();
+      } catch (err) {
+        showLoginError('Gagal terhubung ke server: ' + (err.message || err));
+        setLoginLoading(false);
+      }
+    }
+
+    function applySidebarUserInfo() {
+      const raw = localStorage.getItem('sessionUser');
+      if (!raw) return;
+      const user = JSON.parse(raw);
+      document.getElementById('sidebar-user-name').innerText = user.nama || 'User';
+      document.getElementById('sidebar-user-role').innerText = user.role || 'User';
+      document.getElementById('sidebar-user-avatar').innerText = (user.nama || 'U').trim().charAt(0).toUpperCase();
+    }
+
+    async function enterApp() {
+      applySidebarUserInfo();
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('app-root').classList.remove('hidden');
+      document.getElementById('app-root').classList.add('flex');
+      setLoginLoading(false);
+      await runAppInitialization(); // lihat langkah 5
+      startIdleWatcher();   // ← tambahkan ini
+    }
+
+    function forceLogout(message) {
+      stopIdleWatcher();
+
+      // Beri tahu server supaya token ini dihapus dari CacheService juga, bukan
+      // cuma dihapus di localStorage. Best-effort: kalau gagal (mis. sedang
+      // offline), proses logout di sisi client tetap lanjut seperti biasa.
+      if (sessionToken) {
+        fetch(WEB_APP_URL, {
+          method: 'POST',
+          body: JSON.stringify({ functionName: 'logout', arguments: [], token: sessionToken })
+        }).catch(() => {});
+      }
+      
+      sessionToken = null;
+      localStorage.removeItem('sessionToken');
+      localStorage.removeItem('sessionUser');
+      document.getElementById('app-root').classList.add('hidden');
+      document.getElementById('app-root').classList.remove('flex');
+      document.getElementById('login-screen').classList.remove('hidden');
+      if (message) showLoginError(message);
+      document.getElementById('form-login').reset();
+    }
+
+    function handleLogout() {
+      openLogoutConfirm();
+    }
+
+    function openLogoutConfirm() {
+      toggleSidebarUserMenu(); // tutup dropdown profil dulu
+      const backdrop = document.getElementById('logout-modal-backdrop');
+      backdrop.classList.remove('hidden');
+      backdrop.classList.add('flex');
+    }
+
+    function closeLogoutConfirm() {
+      const backdrop = document.getElementById('logout-modal-backdrop');
+      backdrop.classList.add('hidden');
+      backdrop.classList.remove('flex');
+    }
+
+    function confirmLogoutAction() {
+      closeLogoutConfirm();
+      forceLogout();
+    }
+
+    // Dipanggil sekali saat halaman pertama kali dibuka: cek apakah ada sesi lama yang masih valid
+    async function checkExistingSession() {
+      const saved = localStorage.getItem('sessionToken');
+      if (!saved) return;
+
+      try {
+        const res = await fetch(WEB_APP_URL, {
+          method: 'POST',
+          body: JSON.stringify({ functionName: 'validateSession', arguments: [], token: saved })
+        });
+        const result = await res.json();
+        if (result && result.valid) {
+          sessionToken = saved;
+          await enterApp();
+        } else {
+          localStorage.removeItem('sessionToken');
+          localStorage.removeItem('sessionUser');
+        }
+      } catch (err) {
+        console.warn('Gagal memvalidasi sesi lama:', err);
+      }
     }
 
     function buildDataKaryawanByNrp() {
@@ -2139,27 +2599,24 @@
     // Setiap init dibungkus try/catch terpisah: kalau salah satu gagal (mis. chart
     // tidak bisa dibuat karena CDN diblokir), bagian lain (termasuk navigasi menu)
     // tetap berjalan normal.
-    document.addEventListener("DOMContentLoaded", async () => {
+    async function runAppInitialization() {
       try { initDateWidgets(); } catch (err) { console.error('initDateWidgets gagal:', err); }
-
-      try {
-        await loadDataFromSheet();
-      } catch (err) {
+      try { await loadDataFromSheet(); } catch (err) {
         console.error('Gagal memuat data dari Google Sheet:', err);
         showToast('Gagal memuat data dari Sheet. Cek koneksi/izin Apps Script.');
       }
-
       try { initDashboardData(); } catch (err) { console.error('initDashboardData gagal:', err); }
-      try { updateDashboardLastUpdateLabel(); } catch (err) { console.error('updateDashboardLastUpdateLabel gagal:', err); }
-      try { initCharts(); } catch (err) { console.error('initCharts gagal (chart dilewati):', err); }
-      try { initRiwayatInputHariIni(); } catch (err) { console.error('initRiwayatInputHariIni gagal:', err); }
-      try { initImportModal(); } catch (err) { console.error('initImportModal gagal:', err); }
-      try { initImportKaryawanModal(); } catch (err) { console.error('initImportKaryawanModal gagal:', err); }
-
-      // Set input tanggal ke hari ini secara default
+      try { updateDashboardLastUpdateLabel(); } catch (err) { console.error(err); }
+      try { initCharts(); } catch (err) { console.error('initCharts gagal:', err); }
+      try { initRiwayatInputHariIni(); } catch (err) { console.error(err); }
+      try { initImportModal(); } catch (err) { console.error(err); }
+      try { initImportKaryawanModal(); } catch (err) { console.error(err); }
       try { document.getElementById('input-tanggal').valueAsDate = new Date(); } catch (err) {}
-    });
+    }
 
+    document.addEventListener("DOMContentLoaded", () => {
+      checkExistingSession(); // TIDAK memuat dashboard sampai sesi terbukti valid
+    });
     // --- Fungsi Navigasi ---
     function switchMenu(viewId, title, subtitle) {
       // Ubah gaya sidebar
@@ -2196,6 +2653,7 @@
 
       if (viewId === 'dashboard') {
         actionsDashboard.classList.remove('hidden');
+        actionsDashboard.classList.add('flex');
       } else if (viewId === 'input-absensi') {
         actionsInput.classList.remove('hidden');
         actionsInput.classList.add('flex');
@@ -2244,6 +2702,15 @@
           try { initAtrModule(); } catch (err) { console.error('initAtrModule gagal:', err); }
           window.atrInitialized = true;
         }
+      } else if (viewId === 'manajemen-user') {
+        // Panel manajemen user tidak punya header action khusus, jadi cukup
+        // inisialisasi/refresh data-nya saja
+        if (!window.manajemenUserInitialized) {
+          try { initManajemenUser(); } catch (err) { console.error('initManajemenUser gagal:', err); }
+          window.manajemenUserInitialized = true;
+        } else {
+          loadUserList(); // refresh data tiap dibuka ulang biar selalu terbaru
+        }
       }
     }
 
@@ -2277,12 +2744,15 @@
       const [y, m] = value.split('-');
       const yearNum = parseInt(y, 10);
       const monthIdx = parseInt(m, 10) - 1; // dropdown pakai 1-12, internal pakai 0-11
-      // HAPUS 4 baris di bawah ini (monthNames, label, dan 3 baris innerText):
-      // const monthNames = [...];
-      // const label = `${monthNames[monthIdx]} ${yearNum}`;
-      // document.getElementById('trend-chart-title').innerText = `Tren Kehadiran - ${label}`;
-      // document.getElementById('top-mangkir-title').innerText = `Top 5 Mangkir Terbanyak (${label})`;
-      // document.getElementById('pengajuan-title').innerText = `Pengajuan Terbaru (${label})`;
+      const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+      const label = `${monthNames[monthIdx]} ${yearNum}`;
+      document.getElementById('trend-chart-title').innerText = `Tren Kehadiran - ${label}`;
+      document.getElementById('top-mangkir-title').innerText = `Top 5 Mangkir Terbanyak (${label})`;
+      document.getElementById('pengajuan-title').innerText = `Pengajuan Terbaru (${label})`;
+
+      // KPI cards (Sakit, Izin, Mangkir, Cuti, Attendance Ratio) + sparkline-nya
+      // ikut menyesuaikan ke bulan yang dipilih. "Ringkasan Hari Ini" & Top 5
+      // Mangkir/Pengajuan Terbaru tetap memakai data real-time hari ini.
       updateDashboardKpiForPeriode(yearNum, monthIdx);
     }
 
@@ -2416,20 +2886,8 @@
       updateSparklines(trend7);
     }
 
-    // Perbaikan: judul "Top 5 Mangkir Terbanyak" & "Pengajuan Terbaru" harus selalu
-    // mengikuti bulan aktual (real-time), bukan hardcode dari HTML ("Juli 2026").
-    function updateBulanBerjalanTitles() {
-      const monthNames = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
-      const now = new Date();
-      const label = `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
-      document.getElementById('top-mangkir-title').innerText = `Top 5 Mangkir Terbanyak (${label})`;
-      document.getElementById('pengajuan-title').innerText = `Pengajuan Terbaru (${label})`;
-      document.getElementById('trend-chart-title').innerText = `Tren Kehadiran - ${label}`;
-    }
-
     function initDashboardData(selYear, selMonth) {
       const now = new Date();
-      updateBulanBerjalanTitles(); // <-- baris baru ditambahkan
       const periodeYear = selYear !== undefined ? selYear : now.getFullYear();
       const periodeMonth = selMonth !== undefined ? selMonth : now.getMonth();
 
@@ -2565,13 +3023,17 @@
               tension: 0.35, pointRadius: 4, pointBackgroundColor: '#0f172a', borderWidth: 2,
               datalabels: {
                 anchor: 'end', align: 'top', color: '#0f172a', font: { size: 10, weight: 'bold' },
-                formatter: (value) => value.toFixed(2) + '%'
+                formatter: (value) => value.toFixed(2) + '%',
+                clamp: true, offset: 4
               }
             }
           ]
         },
         options: {
           responsive: true, maintainAspectRatio: false,
+          layout: {
+            padding: { top: 24 }
+          },
           plugins: {
             legend: { display: false },
             tooltip: { mode: 'index', intersect: false }
@@ -2894,14 +3356,8 @@
       if (value === null || value === undefined || value === '') return null;
 
       // Kasus 1: SheetJS sudah mengembalikan objek Date (biasanya jika cell diformat tanggal)
-      // PERBAIKAN: SheetJS (dengan opsi cellDates:true) membuat Date object berbasis UTC.
-      // Kalau langsung dipakai, downstream (formatTanggalDDMMYYYY) yang membaca komponen
-      // tanggal LOKAL bisa mendapat hasil geser 1 hari, tergantung timezone browser yang
-      // membuka halaman ini. Di sini kita ambil komponen tanggal versi UTC-nya lalu
-      // bangun ulang sebagai Date lokal dengan tanggal kalender yang SAMA persis,
-      // supaya tidak ada pergeseran sama sekali.
       if (value instanceof Date && !isNaN(value.getTime())) {
-        return new Date(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate());
+        return value;
       }
 
       // Kasus 2: serial number Excel (angka hari sejak 1899-12-30)
@@ -3848,6 +4304,21 @@
 
       container.innerHTML = html;
     }
+
+    function setBulanBerjalanSemua() {
+      const namaBulan = [
+        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+      ];
+      const now = new Date();
+      const teks = `${namaBulan[now.getMonth()]} ${now.getFullYear()}`;
+
+      document.querySelectorAll(".bulan-berjalan").forEach(el => {
+        el.textContent = teks;
+      });
+    }
+
+    setBulanBerjalanSemua();
 
     function goToLaporanPage(page) {
       laporanCurrentPage = page;
@@ -5423,6 +5894,208 @@
         "Cukup: 85% - 89.99%\n" +
         "Perlu Perhatian: di bawah 85%"
       );
+    }
+
+    function toggleLoginPasswordVisibility() {
+      const input = document.getElementById('login-password');
+      const eye = document.getElementById('login-password-eye');
+      const isHidden = input.type === 'password';
+      input.type = isHidden ? 'text' : 'password';
+      eye.classList.toggle('fa-eye', !isHidden);
+      eye.classList.toggle('fa-eye-slash', isHidden);
+    }
+
+    // ============================================================
+    // MODUL MANAJEMEN USER
+    // ============================================================
+    let muUserList = [];
+    let muFilteredList = [];
+    let muCurrentPage = 1;
+    const MU_PAGE_SIZE = 10;
+    let muFormMode = 'add'; // 'add' atau 'edit'
+    let muEditingUsername = null;
+
+    function initManajemenUser() {
+      loadUserList();
+    }
+
+    function loadUserList() {
+      gsRun('getUserList')
+        .then(list => {
+          muUserList = list || [];
+          updateMuStats();
+          filterUserTable();
+        })
+        .catch(err => alert('Gagal memuat daftar user: ' + (err.message || err)));
+    }
+
+    function updateMuStats() {
+      document.getElementById('mu-total-user').innerText = muUserList.length;
+      document.getElementById('mu-total-admin').innerText = muUserList.filter(u => u.role === 'Administrator').length;
+    }
+
+    function filterUserTable() {
+      const query = (document.getElementById('mu-search').value || '').toLowerCase();
+      muFilteredList = muUserList.filter(u =>
+        !query || u.nama.toLowerCase().includes(query) || u.username.toLowerCase().includes(query)
+      );
+      muCurrentPage = 1;
+      renderUserTablePage();
+    }
+
+    function renderUserTablePage() {
+      const totalPages = Math.max(1, Math.ceil(muFilteredList.length / MU_PAGE_SIZE));
+      muCurrentPage = Math.min(muCurrentPage, totalPages);
+      const start = (muCurrentPage - 1) * MU_PAGE_SIZE;
+      const pageItems = muFilteredList.slice(start, start + MU_PAGE_SIZE);
+
+      const tbody = document.getElementById('mu-table-body');
+      if (pageItems.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400">Tidak ada user yang cocok.</td></tr>`;
+      } else {
+        tbody.innerHTML = pageItems.map((u, i) => {
+          const initial = (u.nama || u.username || '?').trim().charAt(0).toUpperCase();
+          const badgeColor = u.role === 'Administrator' ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600';
+          const avatarColor = u.role === 'Administrator' ? 'bg-blue-600' : 'bg-emerald-500';
+          return `
+            <tr>
+              <td class="py-3 text-slate-400">${start + i + 1}</td>
+                <td class="py-3">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-8 h-8 rounded-full ${avatarColor} text-white flex items-center justify-center text-xs font-bold shrink-0">${initial}</div>
+                  <span class="font-bold text-slate-800">${u.nama}</span>
+                </div>
+              </td>
+              <td class="py-3 text-slate-600">${u.username}</td>
+              <td class="py-3"><span class="px-2.5 py-1 rounded-md text-[10px] font-bold ${badgeColor}">${u.role}</span></td>
+              <td class="py-3 text-right space-x-1">
+                <button onclick="openEditUserPanel('${u.username}')" class="w-7 h-7 rounded text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition border border-transparent hover:border-blue-100" title="Edit"><i class="fa-solid fa-pen text-[10px]"></i></button>
+                <button onclick="hapusUser('${u.username}')" class="w-7 h-7 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition border border-transparent hover:border-rose-100" title="Hapus"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      const showingFrom = muFilteredList.length === 0 ? 0 : start + 1;
+      const showingTo = Math.min(start + MU_PAGE_SIZE, muFilteredList.length);
+      document.getElementById('mu-showing-label').innerText = `Menampilkan ${showingFrom} - ${showingTo} dari ${muFilteredList.length} data`;
+
+      renderMuPagination(totalPages);
+    }
+
+    function renderMuPagination(totalPages) {
+      const container = document.getElementById('mu-pagination');
+      const current = muCurrentPage;
+      let html = `<button onclick="goToMuPage(${current - 1})" ${current === 1 ? 'disabled' : ''} class="w-8 h-8 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition"><i class="fa-solid fa-chevron-left text-xs"></i></button>`;
+      for (let i = 1; i <= totalPages; i++) {
+        const active = i === current;
+        html += `<button onclick="goToMuPage(${i})" class="w-8 h-8 rounded-lg border ${active ? 'border-blue-500 text-blue-600 font-bold' : 'border-slate-200 text-slate-500 hover:bg-slate-50'} flex items-center justify-center text-sm transition">${i}</button>`;
+      }
+      html += `<button onclick="goToMuPage(${current + 1})" ${current === totalPages ? 'disabled' : ''} class="w-8 h-8 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition"><i class="fa-solid fa-chevron-right text-xs"></i></button>`;
+      container.innerHTML = html;
+    }
+
+    function goToMuPage(page) {
+      muCurrentPage = page;
+      renderUserTablePage();
+    }
+
+    function openEditUserPanel(username) {
+      const user = muUserList.find(u => u.username === username);
+      if (!user) return;
+
+      muFormMode = 'edit';
+      muEditingUsername = username;
+
+      document.getElementById('mu-panel-title').innerText = 'Edit User';
+      document.getElementById('mu-submit-label').innerText = 'Simpan Perubahan';
+      document.getElementById('mu-nama').value = user.nama;
+      document.getElementById('mu-username').value = user.username;
+      document.getElementById('mu-username').disabled = true;
+      document.getElementById('mu-role').value = user.role;
+      document.getElementById('mu-password').value = '';
+      document.getElementById('mu-password-confirm').value = '';
+      document.getElementById('mu-password-hint').classList.remove('hidden');
+      document.getElementById('mu-error').classList.add('hidden');
+
+      document.getElementById('form-user').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function resetUserForm() {
+      muFormMode = 'add';
+      muEditingUsername = null;
+      document.getElementById('form-user').reset();
+      document.getElementById('mu-panel-title').innerText = 'Tambah User Baru';
+      document.getElementById('mu-submit-label').innerText = 'Simpan User';
+      document.getElementById('mu-username').disabled = false;
+      document.getElementById('mu-password-hint').classList.add('hidden');
+      document.getElementById('mu-error').classList.add('hidden');
+    }
+
+    function toggleMuPasswordVisibility(inputId, btn) {
+      const input = document.getElementById(inputId);
+      const icon = btn.querySelector('i');
+      const isHidden = input.type === 'password';
+      input.type = isHidden ? 'text' : 'password';
+      icon.classList.toggle('fa-eye', !isHidden);
+      icon.classList.toggle('fa-eye-slash', isHidden);
+    }
+
+    function showMuError(msg) {
+      const el = document.getElementById('mu-error');
+      el.innerText = msg;
+      el.classList.remove('hidden');
+    }
+
+    function submitUserForm(e) {
+      e.preventDefault();
+      document.getElementById('mu-error').classList.add('hidden');
+
+      const nama = document.getElementById('mu-nama').value.trim();
+      const username = document.getElementById('mu-username').value.trim();
+      const role = document.getElementById('mu-role').value;
+      const password = document.getElementById('mu-password').value;
+      const passwordConfirm = document.getElementById('mu-password-confirm').value;
+
+      if (!role) { showMuError('Pilih status/peran terlebih dahulu.'); return; }
+
+      if (muFormMode === 'add') {
+        if (!password) { showMuError('Password wajib diisi untuk user baru.'); return; }
+        if (password !== passwordConfirm) { showMuError('Konfirmasi password tidak cocok.'); return; }
+
+        gsRun('addUser', { username, password, nama, role })
+        .then(() => {
+          loadUserList();
+          resetUserForm();
+          showToast(`User "${username}" berhasil ditambahkan.`);
+        })
+        .catch(err => showMuError('Gagal menyimpan: ' + (err.message || err)));
+
+        } else {
+        if (password || passwordConfirm) {
+          if (password !== passwordConfirm) { showMuError('Konfirmasi password tidak cocok.'); return; }
+        }
+
+        gsRun('updateUser', { username: muEditingUsername, nama, role, password: password || undefined })
+        .then(() => {
+          loadUserList();
+          resetUserForm();
+          showToast(`User "${muEditingUsername}" berhasil diperbarui.`);
+        })
+        .catch(err => showMuError('Gagal menyimpan: ' + (err.message || err)));
+      }
+    }
+
+    function hapusUser(username) {
+      if (!confirm(`Hapus user "${username}"? Aksi ini tidak bisa dibatalkan.`)) return;
+      gsRun('deleteUser', username)
+      .then(() => {
+        loadUserList();
+        if (muEditingUsername === username) resetUserForm();
+        showToast(`User "${username}" berhasil dihapus.`);
+      })
+      .catch(err => alert('Gagal menghapus user: ' + (err.message || err)));
     }
   </script>
 </body>
