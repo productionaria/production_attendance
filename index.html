@@ -2216,7 +2216,9 @@
     // URL ini disisipkan otomatis oleh Code.gs (lihat doGet) memakai print
     // scriptlet Apps Script — tidak pernah ditulis manual, jadi aman di-commit
     // ke repo publik. Nilainya berbeda otomatis untuk tiap deployment/environment.
-    const WEB_APP_URL = "<?= scriptUrl ?>"; 
+    const SUPABASE_URL = "https://xxxx.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJ...";   // anon key (boleh di frontend, asal RLS aktif)
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // Daftarkan plugin datalabels secara global (dimatikan per-chart bila tidak diperlukan)
     // Dibungkus try/catch: kalau Chart.js/plugin gagal dimuat dari CDN (mis. jaringan
