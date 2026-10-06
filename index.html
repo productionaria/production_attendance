@@ -2365,26 +2365,33 @@
       document.getElementById('login-error').classList.add('hidden');
       setLoginLoading(true);
 
-      const username = document.getElementById('login-username').value.trim();
+      const username = document.getElementById('login-username').value.trim().toLowerCase();
       const password = document.getElementById('login-password').value;
 
       try {
-        // login TIDAK butuh sessionToken, karena inilah yang menghasilkan token
-        const res = await fetch(WEB_APP_URL, {
-          method: 'POST',
-          body: JSON.stringify({ functionName: 'login', arguments: [username, password] })
+        // username dipetakan ke email palsu
+        const { data, error } = await sb.auth.signInWithPassword({
+          email: `${username}@aria.local`,
+          password
         });
-        const result = await res.json();
-
-        if (!result || result.error || !result.token) {
-          showLoginError(result && result.error ? result.error : 'Username atau password salah.');
+        if (error) {
+          showLoginError('Username atau password salah.');
           setLoginLoading(false);
           return;
         }
 
-        sessionToken = result.token;
-        localStorage.setItem('sessionToken', sessionToken);
-        localStorage.setItem('sessionUser', JSON.stringify({ nama: result.nama || username, role: result.role || 'User' }));
+        // ambil nama & role dari tabel profiles
+        const { data: prof, error: profErr } = await sb.from('profiles')
+          .select('nama, role').eq('id', data.user.id).single();
+        if (profErr || !prof) {
+          await sb.auth.signOut();
+          showLoginError('Profil user tidak ditemukan. Hubungi administrator.');
+          setLoginLoading(false);
+          return;
+        }
+
+        sessionToken = data.session.access_token; // supaya cek `if (!sessionToken)` di idle watcher tetap jalan
+        localStorage.setItem('sessionUser', JSON.stringify({ nama: prof.nama, role: prof.role }));
 
         await enterApp();
       } catch (err) {
@@ -2414,25 +2421,15 @@
 
     function forceLogout(message) {
       stopIdleWatcher();
+      sb.auth.signOut().catch(() => {});
 
-      // Beri tahu server supaya token ini dihapus dari CacheService juga, bukan
-      // cuma dihapus di localStorage. Best-effort: kalau gagal (mis. sedang
-      // offline), proses logout di sisi client tetap lanjut seperti biasa.
-      if (sessionToken) {
-        fetch(WEB_APP_URL, {
-          method: 'POST',
-          body: JSON.stringify({ functionName: 'logout', arguments: [], token: sessionToken })
-        }).catch(() => {});
-      }
-      
       sessionToken = null;
-      localStorage.removeItem('sessionToken');
       localStorage.removeItem('sessionUser');
       document.getElementById('app-root').classList.add('hidden');
       document.getElementById('app-root').classList.remove('flex');
       document.getElementById('login-screen').classList.remove('hidden');
-      if (message) showLoginError(message);
       document.getElementById('form-login').reset();
+      if (message) showLoginError(message);
     }
 
     function handleLogout() {
@@ -2459,27 +2456,21 @@
 
     // Dipanggil sekali saat halaman pertama kali dibuka: cek apakah ada sesi lama yang masih valid
     async function checkExistingSession() {
-      const saved = localStorage.getItem('sessionToken');
-      if (!saved) return;
-
       try {
-        const res = await fetch(WEB_APP_URL, {
-          method: 'POST',
-          body: JSON.stringify({ functionName: 'validateSession', arguments: [], token: saved })
-        });
-        const result = await res.json();
-        if (result && result.valid) {
-          sessionToken = saved;
-          await enterApp();
-        } else {
-          localStorage.removeItem('sessionToken');
-          localStorage.removeItem('sessionUser');
-        }
+        const { data: { session } } = await sb.auth.getSession();
+        if (!session) return;
+
+        const { data: prof } = await sb.from('profiles')
+          .select('nama, role').eq('id', session.user.id).single();
+        if (!prof) { await sb.auth.signOut(); return; }
+
+        sessionToken = session.access_token;
+        localStorage.setItem('sessionUser', JSON.stringify({ nama: prof.nama, role: prof.role }));
+        await enterApp();
       } catch (err) {
         console.warn('Gagal memvalidasi sesi lama:', err);
       }
     }
-
     function buildDataKaryawanByNrp() {
       dataKaryawanByNrp = {};
       realKaryawanList.forEach(k => {
