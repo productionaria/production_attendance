@@ -2287,6 +2287,50 @@
       idleTimer = null;
     }
 
+    const API = {
+      async getKaryawanList() {
+        const { data, error } = await sb.from('karyawan').select('*').eq('aktif', true).order('nrp');
+        if (error) throw error;
+        return data.map(k => ({ nrp: k.nrp, nama: k.nama, posisi: k.posisi, dept: k.dept,
+                            email: k.email, hp: k.hp, fotoUrl: k.foto_url }));
+      },
+
+      // Wajib paginasi karena limit 1000 baris. Idealnya dibatasi rentang tanggal.
+      async getRekapAll(fromISO) {
+        let all = [], from = 0, size = 1000;
+        while (true) {
+          let q = sb.from('rekap').select('id,nrp,tanggal,status,keterangan,karyawan(nama,posisi,dept)')
+                .order('id').range(from, from + size - 1);
+          if (fromISO) q = q.gte('tanggal', fromISO);
+          const { data, error } = await q;
+          if (error) throw error;
+          all = all.concat(data);
+          if (data.length < size) break;
+          from += size;
+        }
+        return all.map(r => ({ rowNumber: r.id, nrp: r.nrp, nama: r.karyawan?.nama, posisi: r.karyawan?.posisi,
+        dept: r.karyawan?.dept, tanggal: r.tanggal.split('-').reverse().join('/'),   // kompatibel dgn kode lama
+        remarks: r.status, keterangan: r.keterangan }));
+      },
+
+      async addRekap({ nrp, tanggal, remarks, keterangan }) {
+        const iso = tanggal.split('/').reverse().join('-');
+        const { error } = await sb.from('rekap').insert({ nrp, tanggal: iso, status: remarks, keterangan });
+          if (error) throw error;
+      },
+
+      async addRekapBulk(rows) {               // untuk Import Excel
+        for (let i = 0; i < rows.length; i += 500) {
+          const { error } = await sb.from('rekap').upsert(rows.slice(i, i + 500), { onConflict: 'nrp,tanggal' });
+          if (error) throw error;
+        }
+      },
+
+      async deleteRekap(id) {
+        const { error } = await sb.from('rekap').delete().eq('id', id);
+          if (error) throw error;
+        }
+    };
     function gsRun(fnName, ...args) {
       if (typeof API[fnName] !== 'function') {
         return Promise.reject(new Error('Fungsi belum tersedia: ' + fnName));
