@@ -2287,62 +2287,96 @@
       idleTimer = null;
     }
 
-    const API = {
-      async getKaryawanList() {
-        const { data, error } = await sb.from('karyawan').select('*').eq('aktif', true).order('nrp');
+   const API = {
+    // ===== KARYAWAN =====
+    async getKaryawanList() {
+      const { data, error } = await sb.from('karyawan').select('*').eq('aktif', true).order('nrp');
         if (error) throw error;
         return data.map(k => ({ nrp: k.nrp, nama: k.nama, posisi: k.posisi, dept: k.dept,
                             email: k.email, hp: k.hp, fotoUrl: k.foto_url }));
-      },
+    },
 
-      // Wajib paginasi karena limit 1000 baris. Idealnya dibatasi rentang tanggal.
-      async getRekapAll(fromISO) {
-        let all = [], from = 0, size = 1000;
-        while (true) {
-          let q = sb.from('rekap').select('id,nrp,tanggal,status,keterangan,karyawan(nama,posisi,dept)')
-                .order('id').range(from, from + size - 1);
-          if (fromISO) q = q.gte('tanggal', fromISO);
-          const { data, error } = await q;
-          if (error) throw error;
-          all = all.concat(data);
-          if (data.length < size) break;
-          from += size;
-        }
-        return all.map(r => ({ rowNumber: r.id, nrp: r.nrp, nama: r.karyawan?.nama, posisi: r.karyawan?.posisi,
-        dept: r.karyawan?.dept, tanggal: r.tanggal.split('-').reverse().join('/'),   // kompatibel dgn kode lama
-        remarks: r.status, keterangan: r.keterangan }));
-      },
-
-      async addRekap({ nrp, tanggal, remarks, keterangan }) {
-        const iso = tanggal.split('/').reverse().join('-');
-        const { error } = await sb.from('rekap').insert({ nrp, tanggal: iso, status: remarks, keterangan });
-          if (error) throw error;
-      },
-
-      async addRekapBulk(rows) {               // untuk Import Excel
-        for (let i = 0; i < rows.length; i += 500) {
-          const { error } = await sb.from('rekap').upsert(rows.slice(i, i + 500), { onConflict: 'nrp,tanggal' });
-          if (error) throw error;
-        }
-      },
-
-      async deleteRekap(id) {
-        const { error } = await sb.from('rekap').delete().eq('id', id);
-          if (error) throw error;
-        }
-    };
-    function gsRun(fnName, ...args) {
-      if (typeof API[fnName] !== 'function') {
-        return Promise.reject(new Error('Fungsi belum tersedia: ' + fnName));
-      }
-      return Promise.resolve(API[fnName](...args)).catch(err => {
-        // Sesi Supabase habis / tidak valid -> kembali ke layar login
-        if (err && (err.status === 401 || /JWT|not authenticated/i.test(err.message || ''))) {
-          forceLogout('Sesi Anda telah berakhir. Silakan masuk kembali.');
-        }
-        throw err;
+    async addKaryawan(d) {
+      const { error } = await sb.from('karyawan').insert({
+        nrp: d.nrp, nama: d.nama, posisi: d.posisi, dept: d.dept,
+        email: d.email || null, hp: d.hp || null, foto_url: d.fotoUrl || null
       });
+      if (error) throw error;
+    },
+
+    async updateKaryawan(d) {
+      const { error } = await sb.from('karyawan').update({
+        nama: d.nama, posisi: d.posisi, dept: d.dept,
+        email: d.email || null, hp: d.hp || null, foto_url: d.fotoUrl || null
+      }).eq('nrp', d.nrp);
+      if (error) throw error;
+    },
+
+    async deleteKaryawan(nrp) {
+      const { error } = await sb.from('karyawan').update({ aktif: false }).eq('nrp', nrp);
+      if (error) throw error;
+    },
+
+    // ===== REKAP =====
+    async getRekapAll(fromISO) {
+      let all = [], from = 0, size = 1000;
+      while (true) {
+        let q = sb.from('rekap').select('id,nrp,tanggal,status,keterangan,karyawan(nama,posisi,dept)')
+                .order('id').range(from, from + size - 1);
+        if (fromISO) q = q.gte('tanggal', fromISO);
+        const { data, error } = await q;
+        if (error) throw error;
+        all = all.concat(data);
+        if (data.length < size) break;
+        from += size;
+      }
+      return all.map(r => ({
+        rowNumber: r.id, nrp: r.nrp, nama: r.karyawan?.nama, posisi: r.karyawan?.posisi,
+        dept: r.karyawan?.dept, tanggal: r.tanggal.split('-').reverse().join('/'),
+        remarks: r.status, keterangan: r.keterangan
+      }));
+    },
+
+    async addRekap({ nrp, tanggal, remarks, keterangan }) {
+      const iso = tanggal.split('/').reverse().join('-');
+      const { error } = await sb.from('rekap').insert({ nrp, tanggal: iso, status: remarks, keterangan });
+      if (error) throw error;
+    },
+
+    async deleteRekap(id) {
+      const { error } = await sb.from('rekap').delete().eq('id', id);
+      if (error) throw error;
+    },
+
+    // ===== MANAJEMEN USER (lewat Vercel function) =====
+    async _admin(action, payload) {
+      const { data: { session } } = await sb.auth.getSession();
+      const res = await fetch('/api/admin-users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session.access_token },
+        body: JSON.stringify({ action, ...payload })
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Gagal');
+      return json;
+    },
+    getUserList() { return this._admin('list'); },
+    addUser(d)    { return this._admin('add', d); },
+    updateUser(d) { return this._admin('update', d); },
+    deleteUser(u) { return this._admin('delete', { username: u }); }
+  };
+
+  function gsRun(fnName, ...args) {
+    if (typeof API[fnName] !== 'function') {
+      return Promise.reject(new Error('Fungsi belum tersedia: ' + fnName));
     }
+    return Promise.resolve(API[fnName](...args)).catch(err => {
+      if (err && (err.status === 401 || /JWT|not authenticated/i.test(err.message || ''))) {
+        forceLogout('Sesi Anda telah berakhir. Silakan masuk kembali.');
+      }
+      throw err;
+    });
+  }
 
     function toggleSidebarUserMenu() {
       document.getElementById('sidebar-user-menu').classList.toggle('hidden');
