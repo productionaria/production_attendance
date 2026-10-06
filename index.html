@@ -2288,36 +2288,15 @@
     }
 
     function gsRun(fnName, ...args) {
-      return new Promise((resolve, reject) => {
-        if (typeof google !== 'undefined' && google.script && google.script.run) {
-          google.script.run
-            .withSuccessHandler(resolve)
-            .withFailureHandler((err) => reject(err))
-          [fnName](...args);
-        } else {
-          fetch(WEB_APP_URL, {
-            method: 'POST',
-            body: JSON.stringify({ functionName: fnName, arguments: args, token: sessionToken })
-          })
-          .then(response => {
-          if (!response.ok) {
-            throw new Error('Web App merespons dengan status ' + response.status + '.');
-          }
-          return response.json();
-          })
-          .then(result => {
-            if (result && result.error === 'Unauthorized') {
-              // Sesi habis/invalid -> paksa kembali ke layar login
-              forceLogout('Sesi Anda telah berakhir. Silakan masuk kembali.');
-              reject(new Error('Unauthorized'));
-            } else if (result && result.error) {
-              reject(new Error(result.error));
-            } else {
-              resolve(result);
-            }
-          })
-          .catch(err => reject(err));
+      if (typeof API[fnName] !== 'function') {
+        return Promise.reject(new Error('Fungsi belum tersedia: ' + fnName));
+      }
+      return Promise.resolve(API[fnName](...args)).catch(err => {
+        // Sesi Supabase habis / tidak valid -> kembali ke layar login
+        if (err && (err.status === 401 || /JWT|not authenticated/i.test(err.message || ''))) {
+          forceLogout('Sesi Anda telah berakhir. Silakan masuk kembali.');
         }
+        throw err;
       });
     }
 
