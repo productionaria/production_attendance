@@ -2457,7 +2457,7 @@
     getUserList() { return this._admin('list'); },
     addUser(d)    { return this._admin('add', d); },
     updateUser(d) { return this._admin('update', d); },
-    deleteUser(u) { return this._admin('delete', { username: u }); }
+    deleteUser(u) { return this._admin('delete', { username: u }); },
      
     // ===== TERLAMBAT =====
     async getTerlambat(startISO, endISO) {
@@ -2489,7 +2489,7 @@
       const { error } = await sb.from('terlambat').delete().eq('id', id);
       if (error) throw error;
     },
-  }
+  };
 
   function gsRun(fnName, ...args) {
     if (typeof API[fnName] !== 'function') {
