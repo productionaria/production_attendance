@@ -1888,11 +1888,94 @@
                       <i class="fa-solid fa-floppy-disk"></i> <span id="mu-submit-label">Simpan User</span>
                     </button>
                   </div>
+                  
                 </form>
               </div>
             </div>
           </div>
         </div>
+        <div id="view-terlambat" class="view-section space-y-6 hidden">
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+              <p class="text-xs font-bold text-slate-400 tracking-wider">TERLAMBAT HARI INI</p>
+              <h3 id="tl-stat-hari" class="text-3xl font-extrabold text-slate-900 mt-1">0</h3>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+              <p class="text-xs font-bold text-slate-400 tracking-wider">KEJADIAN BULAN TERPILIH</p>
+              <h3 id="tl-stat-bulan" class="text-3xl font-extrabold text-slate-900 mt-1">0</h3>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+              <p class="text-xs font-bold text-slate-400 tracking-wider">TOTAL MENIT TERLAMBAT</p>
+              <h3 id="tl-stat-menit" class="text-3xl font-extrabold text-slate-900 mt-1">0</h3>
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+            <!-- Form -->
+            <div class="xl:col-span-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+              <h3 class="font-bold text-slate-900 text-lg mb-4">Input Keterlambatan</h3>
+              <form onsubmit="submitTerlambat(event)" class="space-y-4">
+                <div>
+                  <label class="block text-sm font-bold text-slate-800 mb-1.5">NRP</label>
+                  <input type="text" id="tl-nrp" oninput="lookupKaryawanTerlambat(this.value)" required placeholder="Masukkan NRP" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition">
+                  <p id="tl-nama" class="text-xs text-slate-400 mt-1.5">Nama akan otomatis muncul</p>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-bold text-slate-800 mb-1.5">Tanggal</label>
+                    <input type="date" id="tl-tanggal" required class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-medium focus:outline-none focus:border-blue-500 transition">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-bold text-slate-800 mb-1.5">Jam Masuk</label>
+                    <input type="time" id="tl-jam" oninput="hitungMenitTerlambat()" required class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-medium focus:outline-none focus:border-blue-500 transition">
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm font-bold text-slate-800 mb-1.5">Menit Terlambat <span class="font-normal text-slate-400">(otomatis, bisa diubah)</span></label>
+                  <input type="number" id="tl-menit" min="1" required class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:border-blue-500 transition">
+                  <p class="text-xs text-slate-400 mt-1.5">Dihitung dari jam masuk standar <b id="tl-jam-standar-label"></b></p>
+                </div>
+                <div>
+                  <label class="block text-sm font-bold text-slate-800 mb-1.5">Keterangan (opsional)</label>
+                  <textarea id="tl-ket" rows="2" maxlength="200" class="w-full bg-white border border-slate-200 rounded-xl p-3 text-sm font-medium focus:outline-none focus:border-blue-500 transition resize-none"></textarea>
+                </div>
+                <div class="flex gap-3">
+                  <button type="button" onclick="resetFormTerlambat()" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-sm font-bold transition">Reset</button>
+                  <button type="submit" class="flex-1 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-md shadow-blue-200 transition">Simpan</button>
+                </div>
+            </form>
+          </div>
+
+          <!-- Tabel -->
+          <div class="xl:col-span-8 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
+              <h3 class="font-bold text-slate-900 text-lg">Data Terlambat</h3>
+              <div class="flex items-center gap-3">
+                <input type="month" id="tl-filter-bulan" onchange="loadTerlambat()" class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 outline-none">
+                <div class="relative">
+                  <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
+                  <input type="text" id="tl-search" oninput="renderTerlambat()" placeholder="Cari NRP / Nama..." class="bg-white border border-slate-200 rounded-full pl-8 pr-4 py-2 text-sm outline-none focus:border-blue-500">
+                </div>
+              </div>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm">
+                <thead>
+                  <tr class="text-slate-400 border-b border-slate-100 text-xs">
+                    <th class="pb-3 font-bold">Tanggal</th><th class="pb-3 font-bold">NRP</th>
+                    <th class="pb-3 font-bold">Nama</th><th class="pb-3 font-bold">Dept</th>
+                    <th class="pb-3 font-bold">Jam Masuk</th><th class="pb-3 font-bold">Menit</th>
+                    <th class="pb-3 font-bold">Keterangan</th><th class="pb-3 font-bold text-right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="tl-table-body" class="divide-y divide-slate-50 font-medium text-slate-700"></tbody>
+              </table>
+            </div>
+            <p id="tl-showing" class="text-xs text-slate-500 mt-4"></p>
+          </div>
+        </div>
+      </div>
 
       </main>
     </div>
