@@ -1928,7 +1928,7 @@
                   </div>
                   <div>
                     <label class="block text-sm font-bold text-slate-800 mb-1.5">Jam Masuk</label>
-                    <input type="time" id="tl-jam" oninput="hitungMenitTerlambat()" required class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-medium focus:outline-none focus:border-blue-500 transition">
+                    <input type="time" id="tl-jam" required class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-medium focus:outline-none focus:border-blue-500 transition">
                   </div>
                 </div>
                 <div>
@@ -6299,19 +6299,9 @@
     const isoToDMY = iso => iso.split('-').reverse().join('/');
 
     function initTerlambat() {
-      document.getElementById('tl-jam-standar-label').innerText = JAM_MASUK_STANDAR;
       document.getElementById('tl-filter-bulan').value = new Date().toLocaleDateString('sv-SE').slice(0, 7);
       document.getElementById('tl-tanggal').value = new Date().toLocaleDateString('sv-SE');
       loadTerlambat();
-    }
-
-    function hitungMenitTerlambat() {
-      const jam = document.getElementById('tl-jam').value;
-      if (!jam) return;
-      const [h, m] = jam.split(':').map(Number);
-      const [sh, sm] = JAM_MASUK_STANDAR.split(':').map(Number);
-      const selisih = (h * 60 + m) - (sh * 60 + sm);
-      document.getElementById('tl-menit').value = selisih > 0 ? selisih : '';
     }
 
     function lookupKaryawanTerlambat(nrp) {
@@ -6324,7 +6314,7 @@
     function resetFormTerlambat() {
       document.getElementById('tl-nrp').value = '';
       document.getElementById('tl-jam').value = '';
-      document.getElementById('tl-menit').value = '';
+      document.getElementById('tl-pit').value = '';
       document.getElementById('tl-ket').value = '';
       document.getElementById('tl-tanggal').value = new Date().toLocaleDateString('sv-SE');
       lookupKaryawanTerlambat('');
@@ -6354,24 +6344,33 @@
 
       document.getElementById('tl-stat-hari').innerText = terlambatAll.filter(d => d.tanggalISO === hariIni).length;
       document.getElementById('tl-stat-bulan').innerText = terlambatAll.length;
-      document.getElementById('tl-stat-menit').innerText = terlambatAll.reduce((s, d) => s + d.menit, 0);
+
+      // pit yang paling sering muncul pada bulan terpilih
+      const hitungPit = {};
+      terlambatAll.forEach(d => { if (d.pit) hitungPit[d.pit] = (hitungPit[d.pit] || 0) + 1; });
+      const top = Object.entries(hitungPit).sort((a, b) => b[1] - a[1])[0];
+      document.getElementById('tl-stat-pit').innerText = top ? `${top[0]} (${top[1]})` : '-';
+
+      // saran pit di form
+      document.getElementById('tl-pit-list').innerHTML =
+        Object.keys(hitungPit).sort().map(p => `<option value="${escTl(p)}"></option>`).join('');
 
       const tbody = document.getElementById('tl-table-body');
       tbody.innerHTML = data.length === 0
         ? '<tr><td colspan="8" class="py-8 text-center text-slate-400">Belum ada data terlambat.</td></tr>'
         : data.map(d => `
-        <tr class="hover:bg-slate-50/50 transition">
-          <td class="py-3">${escTl(isoToDMY(d.tanggalISO))}</td>
-          <td class="py-3 text-slate-600">${escTl(d.nrp)}</td>
-          <td class="py-3 font-bold text-slate-800 uppercase">${escTl(d.nama)}</td>
-          <td class="py-3 text-slate-500">${escTl(d.dept)}</td>
-          <td class="py-3">${escTl(d.jam)}</td>
-          <td class="py-3"><span class="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-600 font-bold text-xs">${d.menit} mnt</span></td>
-          <td class="py-3 text-slate-500 max-w-[160px] truncate">${escTl(d.ket) || '-'}</td>
-          <td class="py-3 text-right">
-            <button onclick="hapusTerlambat(${d.id})" class="w-7 h-7 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition border border-transparent hover:border-rose-100" title="Hapus"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
-          </td>
-        </tr>`).join('');
+          <tr class="hover:bg-slate-50/50 transition">
+            <td class="py-3">${escTl(isoToDMY(d.tanggalISO))}</td>
+            <td class="py-3 text-slate-600">${escTl(d.nrp)}</td>
+            <td class="py-3 font-bold text-slate-800 uppercase">${escTl(d.nama)}</td>
+            <td class="py-3 text-slate-500">${escTl(d.dept)}</td>
+            <td class="py-3">${escTl(d.jam)}</td>
+            <td class="py-3"><span class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-600 font-bold text-xs">${escTl(d.pit) || '-'}</span></td>
+            <td class="py-3 text-slate-500 max-w-[160px] truncate">${escTl(d.ket) || '-'}</td>
+            <td class="py-3 text-right">
+              <button onclick="hapusTerlambat(${d.id})" class="w-7 h-7 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition border border-transparent hover:border-rose-100" title="Hapus"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
+            </td>
+          </tr>`).join('');
 
       document.getElementById('tl-showing').innerText = `Menampilkan ${data.length} dari ${terlambatAll.length} data`;
     }
@@ -6386,10 +6385,10 @@
         nrp,
         tanggal: document.getElementById('tl-tanggal').value,
         jam: document.getElementById('tl-jam').value,
-        menit: parseInt(document.getElementById('tl-menit').value, 10),
+        pit: document.getElementById('tl-pit').value.trim(),
         ket: document.getElementById('tl-ket').value.trim()
       };
-      if (!payload.menit || payload.menit < 1) { alert('Menit terlambat harus lebih dari 0.'); return; }
+      if (!payload.pit) { alert('Lokasi pit kerja wajib diisi.'); return; }
 
       try {
         await gsRun('addTerlambat', payload);
@@ -6422,7 +6421,7 @@
 
       const rows = data.map((d, i) => ({
         'No': i + 1, 'Tanggal': isoToDMY(d.tanggalISO), 'NRP': d.nrp, 'Nama': d.nama,
-        'Departemen': d.dept, 'Jam Masuk': d.jam, 'Menit Terlambat': d.menit, 'Keterangan': d.ket
+        'Departemen': d.dept, 'Jam Masuk': d.jam, 'Lokasi Pit': d.pit, 'Keterangan': d.ket
       }));
       const ws = XLSX.utils.json_to_sheet(rows);
       ws['!cols'] = [{wch:5},{wch:12},{wch:14},{wch:28},{wch:14},{wch:10},{wch:16},{wch:30}];
