@@ -1,25 +1,30 @@
 import { createClient } from '@supabase/supabase-js';
 
-const admin = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
-  { auth: { autoRefreshToken: false, persistSession: false } }
-);
+const URL = process.env.SUPABASE_URL;
+const KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const opts = { auth: { autoRefreshToken: false, persistSession: false, detectSessionInUrl: false } };
+
+// client baru untuk SETIAP request, supaya tidak ada state auth yang tersisa
+const makeClient = () => createClient(URL, KEY, opts);
 
 const toEmail = (u) => `${String(u).trim().toLowerCase()}@aria.local`;
 
 export default async function handler(req, res) {
+  if (!URL || !KEY) {
+    return res.status(500).json({ error: 'Env belum terbaca' });
+  }
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  try {
-    // 1. Verifikasi pemanggil
-    const token = (req.headers.authorization || '').replace('Bearer ', '');
-    if (!token) return res.status(401).json({ error: 'Unauthorized: token tidak dikirim' });
-    const { data: { user }, error: authErr } = await admin.auth.getUser(token);
-    if (authErr || !user) return res.status(401).json({ error: 'Unauthorized: ' + (authErr?.message || 'user kosong') });
+  const admin = makeClient();
 
-    const { data: me } = await admin.from('profiles').select('role').eq('id', user.id).single();
-    if (!me || me.role !== 'Administrator') return res.status(403).json({ error: 'Hanya Administrator.' });
+  try {
+    const token = (req.headers.authorization || '').replace('Bearer ', '').trim();
+    if (!token) return res.status(401).json({ error: 'Unauthorized: token tidak dikirim' });
+
+    const { data: { user }, error: authErr } = await admin.auth.getUser(token);
+    if (authErr || !user) {
+      return res.status(401).json({ error: 'Unauthorized: ' + (authErr?.message || 'user kosong') });
+    }
 
     const { action, username, password, nama, role } = req.body || {};
 
