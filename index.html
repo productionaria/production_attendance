@@ -2368,6 +2368,36 @@
     addUser(d)    { return this._admin('add', d); },
     updateUser(d) { return this._admin('update', d); },
     deleteUser(u) { return this._admin('delete', { username: u }); }
+    // ===== TERLAMBAT =====
+    async getTerlambat(startISO, endISO) {
+      let all = [], from = 0, size = 1000;
+      while (true) {
+        const { data, error } = await sb.from('terlambat')
+          .select('id,nrp,tanggal,jam_masuk,menit_terlambat,keterangan,karyawan(nama,dept,posisi)')
+          .gte('tanggal', startISO).lte('tanggal', endISO)
+          .order('tanggal', { ascending: false }).order('id', { ascending: false })
+          .range(from, from + size - 1);
+        if (error) throw error;
+        all = all.concat(data);
+        if (data.length < size) break;
+        from += size;
+      }
+      return all.map(r => ({
+        id: r.id, nrp: r.nrp, nama: r.karyawan?.nama || '-', dept: r.karyawan?.dept || '-',
+        tanggalISO: r.tanggal, jam: String(r.jam_masuk).slice(0, 5),
+        menit: r.menit_terlambat, ket: r.keterangan || ''
+      }));
+    },
+    async addTerlambat(d) {
+      const { error } = await sb.from('terlambat').insert({
+        nrp: d.nrp, tanggal: d.tanggal, jam_masuk: d.jam, menit_terlambat: d.menit, keterangan: d.ket || null
+      });
+      if (error) throw error;
+    },
+    async deleteTerlambat(id) {
+      const { error } = await sb.from('terlambat').delete().eq('id', id);
+      if (error) throw error;
+    },
   };
 
   function gsRun(fnName, ...args) {
