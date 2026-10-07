@@ -14,6 +14,7 @@ export default async function handler(req, res) {
   try {
     // 1. Verifikasi pemanggil
     const token = (req.headers.authorization || '').replace('Bearer ', '');
+    if (!token) return res.status(401).json({ error: 'Unauthorized: token tidak dikirim' });
     const { data: { user }, error: authErr } = await admin.auth.getUser(token);
     if (authErr || !user) return res.status(401).json({ error: 'Unauthorized' });
 
