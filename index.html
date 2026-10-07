@@ -2821,7 +2821,8 @@
       const actionsProfil = document.getElementById('header-actions-profil');
       const actionsDataKaryawan = document.getElementById('header-actions-data-karyawan');
       const actionsAtr = document.getElementById('header-actions-atr');
-      [actionsDashboard, actionsInput, actionsRiwayat, actionsLaporan, actionsProfil, actionsDataKaryawan, actionsAtr].forEach(el => {
+      const actionsTerlambat = document.getElementById('header-actions-terlambat');
+      [actionsDashboard, actionsInput, actionsRiwayat, actionsLaporan, actionsProfil, actionsDataKaryawan, actionsAtr, actionsTerlambat].forEach(el => {
         el.classList.add('hidden');
         el.classList.remove('flex');
       });
@@ -2876,6 +2877,15 @@
         if (!window.atrInitialized) {
           try { initAtrModule(); } catch (err) { console.error('initAtrModule gagal:', err); }
           window.atrInitialized = true;
+        }
+      } else if (viewId === 'terlambat') {
+        actionsTerlambat.classList.remove('hidden');
+        actionsTerlambat.classList.add('flex');
+        if (!window.terlambatInitialized) {
+          try { initTerlambat(); } catch (err) { console.error('initTerlambat gagal:', err); }
+          window.terlambatInitialized = true;
+        } else {
+          loadTerlambat();
         }
       } else if (viewId === 'manajemen-user') {
         // Panel manajemen user tidak punya header action khusus, jadi cukup
@@ -6278,6 +6288,148 @@
       a.removeAttribute('href');
       a.classList.add('cursor-pointer');
     });
+    // ==================================================
+    // --- MODUL TERLAMBAT ---
+    // ==================================================
+    const JAM_MASUK_STANDAR = '07:00'; // ubah sesuai jam kerja Anda
+    let terlambatAll = [];
+
+    const escTl = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const isoToDMY = iso => iso.split('-').reverse().join('/');
+
+    function initTerlambat() {
+      document.getElementById('tl-jam-standar-label').innerText = JAM_MASUK_STANDAR;
+      document.getElementById('tl-filter-bulan').value = new Date().toLocaleDateString('sv-SE').slice(0, 7);
+      document.getElementById('tl-tanggal').value = new Date().toLocaleDateString('sv-SE');
+      loadTerlambat();
+    }
+
+    function hitungMenitTerlambat() {
+      const jam = document.getElementById('tl-jam').value;
+      if (!jam) return;
+      const [h, m] = jam.split(':').map(Number);
+      const [sh, sm] = JAM_MASUK_STANDAR.split(':').map(Number);
+      const selisih = (h * 60 + m) - (sh * 60 + sm);
+      document.getElementById('tl-menit').value = selisih > 0 ? selisih : '';
+    }
+
+    function lookupKaryawanTerlambat(nrp) {
+      const k = dataKaryawanByNrp[(nrp || '').trim()];
+      const el = document.getElementById('tl-nama');
+      if (k) { el.innerText = `${k.nama} • ${k.dept} • ${k.posisi}`; el.className = 'text-xs text-emerald-600 font-semibold mt-1.5'; }
+      else { el.innerText = nrp ? 'NRP tidak ditemukan' : 'Nama akan otomatis muncul'; el.className = 'text-xs ' + (nrp ? 'text-rose-500' : 'text-slate-400') + ' mt-1.5'; }
+    }
+
+    function resetFormTerlambat() {
+      document.getElementById('tl-nrp').value = '';
+      document.getElementById('tl-jam').value = '';
+      document.getElementById('tl-menit').value = '';
+      document.getElementById('tl-ket').value = '';
+      document.getElementById('tl-tanggal').value = new Date().toLocaleDateString('sv-SE');
+      lookupKaryawanTerlambat('');
+    }
+
+    async function loadTerlambat() {
+      const bulan = document.getElementById('tl-filter-bulan').value; // yyyy-mm
+      if (!bulan) return;
+      const [y, m] = bulan.split('-').map(Number);
+      const last = new Date(y, m, 0).getDate();
+      try {
+        terlambatAll = await gsRun('getTerlambat', `${bulan}-01`, `${bulan}-${String(last).padStart(2, '0')}`);
+        renderTerlambat();
+      } catch (err) {
+        alert('Gagal memuat data terlambat: ' + (err.message || err));
+      }
+    }
+
+    function getFilteredTerlambat() {
+      const q = (document.getElementById('tl-search').value || '').toLowerCase();
+      return terlambatAll.filter(d => !q || d.nrp.toLowerCase().includes(q) || d.nama.toLowerCase().includes(q));
+    }
+
+    function renderTerlambat() {
+      const data = getFilteredTerlambat();
+      const hariIni = new Date().toLocaleDateString('sv-SE');
+
+      document.getElementById('tl-stat-hari').innerText = terlambatAll.filter(d => d.tanggalISO === hariIni).length;
+      document.getElementById('tl-stat-bulan').innerText = terlambatAll.length;
+      document.getElementById('tl-stat-menit').innerText = terlambatAll.reduce((s, d) => s + d.menit, 0);
+
+      const tbody = document.getElementById('tl-table-body');
+      tbody.innerHTML = data.length === 0
+        ? '<tr><td colspan="8" class="py-8 text-center text-slate-400">Belum ada data terlambat.</td></tr>'
+        : data.map(d => `
+        <tr class="hover:bg-slate-50/50 transition">
+          <td class="py-3">${escTl(isoToDMY(d.tanggalISO))}</td>
+          <td class="py-3 text-slate-600">${escTl(d.nrp)}</td>
+          <td class="py-3 font-bold text-slate-800 uppercase">${escTl(d.nama)}</td>
+          <td class="py-3 text-slate-500">${escTl(d.dept)}</td>
+          <td class="py-3">${escTl(d.jam)}</td>
+          <td class="py-3"><span class="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-600 font-bold text-xs">${d.menit} mnt</span></td>
+          <td class="py-3 text-slate-500 max-w-[160px] truncate">${escTl(d.ket) || '-'}</td>
+          <td class="py-3 text-right">
+            <button onclick="hapusTerlambat(${d.id})" class="w-7 h-7 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition border border-transparent hover:border-rose-100" title="Hapus"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
+          </td>
+        </tr>`).join('');
+
+      document.getElementById('tl-showing').innerText = `Menampilkan ${data.length} dari ${terlambatAll.length} data`;
+    }
+
+    async function submitTerlambat(e) {
+      e.preventDefault();
+      const nrp = document.getElementById('tl-nrp').value.trim();
+      const k = dataKaryawanByNrp[nrp];
+      if (!k) { alert('NRP tidak ditemukan. Harap periksa kembali.'); return; }
+
+      const payload = {
+        nrp,
+        tanggal: document.getElementById('tl-tanggal').value,
+        jam: document.getElementById('tl-jam').value,
+        menit: parseInt(document.getElementById('tl-menit').value, 10),
+        ket: document.getElementById('tl-ket').value.trim()
+      };
+      if (!payload.menit || payload.menit < 1) { alert('Menit terlambat harus lebih dari 0.'); return; }
+
+      try {
+        await gsRun('addTerlambat', payload);
+        resetFormTerlambat();
+        // pindahkan filter ke bulan data yang baru diinput supaya langsung terlihat
+        document.getElementById('tl-filter-bulan').value = payload.tanggal.slice(0, 7);
+        await loadTerlambat();
+        showToast(`Keterlambatan ${k.nama} berhasil dicatat.`);
+      } catch (err) {
+        const dup = /duplicate|unique/i.test(err.message || '');
+        alert(dup ? `${k.nama} sudah tercatat terlambat pada tanggal tersebut.` : 'Gagal menyimpan: ' + (err.message || err));
+      }
+    }
+
+    async function hapusTerlambat(id) {
+      if (!confirm('Hapus data keterlambatan ini?')) return;
+      try {
+        await gsRun('deleteTerlambat', id);
+        await loadTerlambat();
+        showToast('Data terlambat berhasil dihapus.');
+      } catch (err) {
+        alert('Gagal menghapus: ' + (err.message || err));
+      }
+    }
+
+    function exportTerlambatExcel() {
+      if (typeof XLSX === 'undefined') { alert('Pustaka Excel gagal dimuat dari CDN.'); return; }
+      const data = getFilteredTerlambat();
+      if (data.length === 0) { alert('Tidak ada data untuk diekspor.'); return; }
+
+      const rows = data.map((d, i) => ({
+        'No': i + 1, 'Tanggal': isoToDMY(d.tanggalISO), 'NRP': d.nrp, 'Nama': d.nama,
+        'Departemen': d.dept, 'Jam Masuk': d.jam, 'Menit Terlambat': d.menit, 'Keterangan': d.ket
+      }));
+      const ws = XLSX.utils.json_to_sheet(rows);
+      ws['!cols'] = [{wch:5},{wch:12},{wch:14},{wch:28},{wch:14},{wch:10},{wch:16},{wch:30}];
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Terlambat');
+      XLSX.writeFile(wb, `Terlambat_${document.getElementById('tl-filter-bulan').value}.xlsx`);
+      showToast(`Data terlambat (${data.length}) berhasil diekspor.`);
+    }
   </script>
 </body>
 </html>
