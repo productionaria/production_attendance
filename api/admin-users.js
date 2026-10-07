@@ -16,7 +16,7 @@ export default async function handler(req, res) {
     const token = (req.headers.authorization || '').replace('Bearer ', '');
     if (!token) return res.status(401).json({ error: 'Unauthorized: token tidak dikirim' });
     const { data: { user }, error: authErr } = await admin.auth.getUser(token);
-    if (authErr || !user) return res.status(401).json({ error: 'Unauthorized' });
+    if (authErr || !user) return res.status(401).json({ error: 'Unauthorized: ' + (authErr?.message || 'user kosong') });
 
     const { data: me } = await admin.from('profiles').select('role').eq('id', user.id).single();
     if (!me || me.role !== 'Administrator') return res.status(403).json({ error: 'Hanya Administrator.' });
