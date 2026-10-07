@@ -6150,6 +6150,10 @@
       })
       .catch(err => alert('Gagal menghapus user: ' + (err.message || err)));
     }
+    document.querySelectorAll('a.nav-item[href^="javascript"]').forEach(a => {
+      a.removeAttribute('href');
+      a.classList.add('cursor-pointer');
+    });
   </script>
 </body>
 </html>
