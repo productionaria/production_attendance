@@ -3408,7 +3408,9 @@
 
       // Kasus 1: SheetJS sudah mengembalikan objek Date (biasanya jika cell diformat tanggal)
       if (value instanceof Date && !isNaN(value.getTime())) {
-        return value;
+        // Pakai komponen UTC + pembulatan, bukan komponen lokal
+        const rounded = new Date(value.getTime() + 12 * 60 * 60 * 1000); // geser +12 jam
+        return new Date(rounded.getUTCFullYear(), rounded.getUTCMonth(), rounded.getUTCDate());
       }
 
       // Kasus 2: serial number Excel (angka hari sejak 1899-12-30)
