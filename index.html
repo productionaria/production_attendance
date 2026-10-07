@@ -2458,6 +2458,7 @@
     addUser(d)    { return this._admin('add', d); },
     updateUser(d) { return this._admin('update', d); },
     deleteUser(u) { return this._admin('delete', { username: u }); }
+     
     // ===== TERLAMBAT =====
     async getTerlambat(startISO, endISO) {
       let all = [], from = 0, size = 1000;
