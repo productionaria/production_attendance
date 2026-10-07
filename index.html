@@ -2351,6 +2351,10 @@
     // ===== MANAJEMEN USER (lewat Vercel function) =====
     async _admin(action, payload) {
       const { data: { session } } = await sb.auth.getSession();
+      if (!session) {
+        forceLogout('Sesi Anda telah berakhir. Silakan masuk kembali.');
+        throw new Error('Sesi habis, silakan login ulang.');
+      }
       const res = await fetch('/api/admin-users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + session.access_token },
