@@ -1898,6 +1898,34 @@
             </div>
           </div>
         </div>
+        <div id="view-review" class="view-section space-y-6 hidden">
+
+          <!-- Filter -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="flex flex-col lg:flex-row lg:items-end gap-4">
+              <div>
+                <p class="text-xs font-bold text-slate-500 mb-1.5">Periode</p>
+                <input type="month" id="review-periode" onchange="renderReview()" class="bg-white border border-slate-200 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-700 outline-none focus:border-blue-500">
+              </div>
+              <div>
+                <p class="text-xs font-bold text-slate-500 mb-1.5">Departemen</p>
+                <select id="review-departemen" onchange="renderReview()" class="bg-white border border-slate-200 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-700 outline-none cursor-pointer">
+                  <option value="Semua">Semua Departemen</option>
+                </select>
+              </div>
+              <div class="relative flex-1 lg:max-w-xs">
+                <p class="text-xs font-bold text-slate-500 mb-1.5">Cari</p>
+                <i class="fa-solid fa-magnifying-glass absolute left-3 bottom-3.5 text-slate-400 text-xs"></i>
+                <input type="text" id="review-search" oninput="renderReview()" placeholder="Cari NRP atau Nama..." class="w-full bg-white border border-slate-200 rounded-xl pl-8 pr-4 py-2.5 text-sm outline-none focus:border-blue-500">
+              </div>
+            </div>
+            <p id="review-info" class="text-xs text-slate-400 mt-3"></p>
+          </div>
+
+          <!-- 4 kolom status -->
+          <div id="review-columns" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5"></div>
+        </div>
+        
         <div id="view-terlambat" class="view-section space-y-6 hidden">
           
           <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -2892,6 +2920,15 @@
         } else {
           loadTerlambat();
         }
+      } else if (viewId === 'review') {
+        if (!window.reviewInitialized) {
+          try { initReview(); } catch (err) { console.error('initReview gagal:', err); }
+          window.reviewInitialized = true;
+        } else {
+          populateReviewDepartemen();
+          renderReview(); // selalu render ulang agar mengikuti data terbaru
+        }
+      }
       } else if (viewId === 'manajemen-user') {
         // Panel manajemen user tidak punya header action khusus, jadi cukup
         // inisialisasi/refresh data-nya saja
@@ -6293,6 +6330,101 @@
       a.removeAttribute('href');
       a.classList.add('cursor-pointer');
     });
+    // ==================================================
+    // --- MODUL REVIEW ABSENSI ---
+    // ==================================================
+    const REVIEW_STATUS = [
+      { key: 'SKD',          label: 'Sakit (SKD)',  color: 'blue',    icon: 'fa-heart-pulse' },
+      { key: 'Izin / PKB',   label: 'Izin / PKB',   color: 'emerald', icon: 'fa-calendar-check' },
+      { key: 'Mangkir',      label: 'Mangkir',      color: 'rose',    icon: 'fa-user-slash' },
+      { key: 'Cuti Tahunan', label: 'Cuti Tahunan', color: 'purple',  icon: 'fa-umbrella' }
+    ];
+
+    const escRv = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+    function initReview() {
+      document.getElementById('review-periode').value = new Date().toLocaleDateString('sv-SE').slice(0, 7); // yyyy-mm
+      populateReviewDepartemen();
+      renderReview();
+    }
+  
+    function populateReviewDepartemen() {
+      const select = document.getElementById('review-departemen');
+      const current = select.value || 'Semua';
+      const depts = [...new Set(realKaryawanList.map(k => k.dept))].filter(Boolean).sort();
+      select.innerHTML = '<option value="Semua">Semua Departemen</option>' +
+        depts.map(d => `<option value="${escRv(d)}">${escRv(d)}</option>`).join('');
+      select.value = (current === 'Semua' || depts.includes(current)) ? current : 'Semua';
+    }
+
+    function renderReview() {
+      const periode = document.getElementById('review-periode').value; // yyyy-mm
+      const container = document.getElementById('review-columns');
+      if (!periode) {
+        container.innerHTML = '<p class="col-span-full text-center text-slate-400 py-10">Pilih periode terlebih dahulu.</p>';
+        return;
+      }
+
+      const [y, m] = periode.split('-').map(Number);
+      const dept = document.getElementById('review-departemen').value;
+      const q = (document.getElementById('review-search').value || '').toLowerCase();
+      const bulanSingkat = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
+      const namaBulan = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+
+      // Rekap pada periode terpilih (+ filter departemen & pencarian)
+      const rekapPeriode = realRekapAll.filter(r => {
+        const dt = parseTanggalDDMMYYYY(r.tanggal);
+        if (!dt || dt.getFullYear() !== y || dt.getMonth() !== m - 1) return false;
+        if (dept !== 'Semua' && r.dept !== dept) return false;
+        if (q && !(String(r.nrp).toLowerCase().includes(q) || String(r.nama || '').toLowerCase().includes(q))) return false;
+        return true;
+      });
+
+      document.getElementById('review-info').innerText =
+        `Periode ${namaBulan[m - 1]} ${y} • ${rekapPeriode.length} kejadian ketidakhadiran`;
+
+      container.innerHTML = REVIEW_STATUS.map(st => {
+        // Kelompokkan per karyawan
+        const byNrp = {};
+        rekapPeriode.filter(r => r.remarks === st.key).forEach(r => {
+          if (!byNrp[r.nrp]) byNrp[r.nrp] = { nrp: r.nrp, nama: r.nama || r.nrp, dept: r.dept || '-', tgl: [] };
+          byNrp[r.nrp].tgl.push(parseTanggalDDMMYYYY(r.tanggal).getDate());
+        });
+
+        const list = Object.values(byNrp)
+          .map(e => ({ ...e, tgl: e.tgl.sort((a, b) => a - b) }))
+          .sort((a, b) => b.tgl.length - a.tgl.length || a.nama.localeCompare(b.nama));
+
+        const totalKejadian = list.reduce((s, e) => s + e.tgl.length, 0);
+
+        const items = list.length === 0
+          ? '<p class="text-sm text-slate-400 text-center py-6">Tidak ada data.</p>'
+          : list.map(e => `
+            <div class="flex items-start justify-between gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+              <div class="min-w-0">
+                <p class="text-sm font-bold text-slate-800 uppercase truncate">${escRv(e.nama)}</p>
+                <p class="text-[11px] text-slate-400">${escRv(e.nrp)} • ${escRv(e.dept)}</p>
+                <p class="text-[11px] text-slate-500 mt-1">Tgl: ${e.tgl.join(', ')} ${bulanSingkat[m - 1]}</p>
+              </div>
+              <span class="shrink-0 px-2 py-1 rounded-lg bg-${st.color}-50 text-${st.color}-600 text-xs font-bold">${e.tgl.length}x</span>
+            </div>`).join('');
+
+        return `
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-lg bg-${st.color}-50 text-${st.color}-600 flex items-center justify-center"><i class="fa-solid ${st.icon} text-sm"></i></div>
+                <div>
+                  <h3 class="font-bold text-slate-900 text-sm">${st.label}</h3>
+                  <p class="text-[11px] text-slate-400">${list.length} orang • ${totalKejadian} hari</p>
+                </div>
+              </div>
+            </div>
+            <div class="space-y-2 max-h-[28rem] overflow-y-auto pr-1">${items}</div>
+          </div>`;
+      }).join('');
+    }
+    
     // ==================================================
     // --- MODUL TERLAMBAT ---
     // ==================================================
