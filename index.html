@@ -1918,6 +1918,9 @@
                 <i class="fa-solid fa-magnifying-glass absolute left-3 bottom-3.5 text-slate-400 text-xs"></i>
                 <input type="text" id="review-search" oninput="renderReview()" placeholder="Cari NRP atau Nama..." class="w-full bg-white border border-slate-200 rounded-xl pl-8 pr-4 py-2.5 text-sm outline-none focus:border-blue-500">
               </div>
+              <button onclick="exportReviewExcel()" class="px-4 py-2.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-semibold shadow-sm flex items-center gap-2 transition lg:ml-auto">
+                <i class="fa-solid fa-file-arrow-up text-green-600"></i> Export Excel
+              </button>
             </div>
             <p id="review-info" class="text-xs text-slate-400 mt-3"></p>
           </div>
@@ -6422,6 +6425,22 @@
             <div class="space-y-2 max-h-[28rem] overflow-y-auto pr-1">${items}</div>
           </div>`;
       }).join('');
+    }
+    function getReviewRekapPeriode() {
+      const periode = document.getElementById('review-periode').value; // yyyy-mm
+      if (!periode) return null;
+      const [y, m] = periode.split('-').map(Number);
+      const dept = document.getElementById('review-departemen').value;
+      const q = (document.getElementById('review-search').value || '').toLowerCase();
+
+      const rows = realRekapAll.filter(r => {
+        const dt = parseTanggalDDMMYYYY(r.tanggal);
+        if (!dt || dt.getFullYear() !== y || dt.getMonth() !== m - 1) return false;
+        if (dept !== 'Semua' && r.dept !== dept) return false;
+        if (q && !(String(r.nrp).toLowerCase().includes(q) || String(r.nama || '').toLowerCase().includes(q))) return false;
+        return true;
+      });
+      return { y, m, rows };
     }
     
     // ==================================================
